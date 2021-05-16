@@ -5,7 +5,6 @@ import time
 import sys
 import gamelib as cpp
 
-
 """メモ
 canvas.move(tag_name, x, y)
 -> tag_nameをx軸にx,y軸にy平行移動する
@@ -13,7 +12,8 @@ canvas.move(tag_name, x, y)
 
 flame = 18 #ms
 isfinished = False
-canvas = 0 #canvas
+canvas = None #canvas
+size = 28
 #キーボードからの入力
 def input_key(event):
   key_state = event.keysym
@@ -22,18 +22,19 @@ def input_key(event):
     pass
   if key_state == "Left":
     pass
-  if key_state == "UP":
+  if key_state == "Up":
     pass
-  if key_state == "DOWN":
+  if key_state == "Down":
+    #draw_field()
     pass
 
 
 
-
+#盤面の更新
 def update():
   global canvas
   flip = False
-  
+
   while not isfinished:
     #ここに処理を書く
     canvas.move("circle", 1, 0)
@@ -43,7 +44,7 @@ def update():
     sys.stdout.flush()
     time.sleep(flame / 1000)
     flip ^= True
-  
+
 
 #ウィンドウの作成
 def main():
@@ -52,10 +53,27 @@ def main():
   root = tk.Tk()
   #root.geometry("300x300")
   root.title("Pac-Man")
-  canvas = tk.Canvas(bg="black")
+  canvas = tk.Canvas(root, width=550, height=630, bg="black")
 
-  img = tk.PhotoImage(file= "images/pacman/cirright.png")
-  canvas.create_image(16,16, image=img, tag="circle")
+  #boardに画像を取り込む
+  board = [[None for _ in range(cpp.w)] for _ in range(cpp.h)]
+  for i in range(cpp.h):
+    for j in range(cpp.w):
+      img_name = "images/block/none.png"
+      if cpp.get_field(i, j) == 1:
+        img_name = "images/block/wall.png"
+      board[i][j] = tk.PhotoImage(file= img_name)
+
+  for i in range(cpp.h):
+    for j in range(cpp.w):
+      canvas.create_image((j+1)*size, (i+1)*size, image= board[i][j])
+  
+
+  #img = tk.PhotoImage(file= "images/pacman/cirright.png")
+  #canvas.create_image(size, size, image=img, tag="circle")
+
+
+
 
   root.bind("<KeyPress>", input_key)
   canvas.pack()
