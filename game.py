@@ -11,9 +11,10 @@ canvas.move(tag_name, x, y)
 """
 
 flame = 18 #ms
-isfinished = False
 canvas = None #canvas
 size = 28
+objects = []
+
 #キーボードからの入力
 def input_key(event):
   key_state = event.keysym
@@ -34,16 +35,24 @@ def input_key(event):
 def update():
   global canvas
   flip = False
-
-  while not isfinished:
+  cnt = 0
+  while True:
     #ここに処理を書く
-    canvas.move("circle", 1, 0)
+    if cnt % 6 == 0:
+      flip ^= True
+      if flip:
+        img = tk.PhotoImage(file= "images/pacman/eatright.png")
+        canvas.itemconfig("circle", image= img)
+      else:
+        img = tk.PhotoImage(file= "images/pacman/cirright.png")
+        canvas.itemconfig("circle", image= img)
     
 
 
     sys.stdout.flush()
     time.sleep(flame / 1000)
-    flip ^= True
+    cnt += 1
+  
 
 
 #ウィンドウの作成
@@ -69,8 +78,9 @@ def main():
       canvas.create_image((j+1)*size, (i+1)*size, image= board[i][j])
   
 
-  #img = tk.PhotoImage(file= "images/pacman/cirright.png")
-  #canvas.create_image(size, size, image=img, tag="circle")
+  img = tk.PhotoImage(file= "images/pacman/cirright.png")
+  canvas.create_image(size, size, image=img, tag="circle")
+  #objects.append("circle")
 
 
 
@@ -81,13 +91,10 @@ def main():
 
   #updateを別のスレッドで動かす
   thread1 = threading.Thread(target = update)
+  thread1.setDaemon(True)
   thread1.start()
 
   root.mainloop()
-
-  global isfinished
-  isfinished = True
-  thread1.join()
 
 
 
