@@ -92,19 +92,25 @@ namespace python {
   }
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
-  int get_move_pos(int i){
-    assert(0 <= i && i < 10);
+  int get_move_posy(int i){
+    assert(0 <= i && i < 5);
+    switch(i){
+      case 0: return pacman.get_y();
+      case 1: return red_enemy.get_y();
+      case 2: return blue_enemy.get_y();
+      case 3: return oran_enemy.get_y();
+      case 4: return pink_enemy.get_y();
+      default: assert(0); return -1;
+    }
+  }
+  int get_move_posx(int i){
+    assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_x();
-      case 1: return pacman.get_y();
-      case 2: return red_enemy.get_x();
-      case 3: return red_enemy.get_y();
-      case 4: return blue_enemy.get_x();
-      case 5: return blue_enemy.get_y();
-      case 6: return oran_enemy.get_x();
-      case 7: return oran_enemy.get_y();
-      case 8: return pink_enemy.get_x();
-      case 9: return pink_enemy.get_y();
+      case 1: return red_enemy.get_x();
+      case 2: return blue_enemy.get_x();
+      case 3: return oran_enemy.get_x();
+      case 4: return pink_enemy.get_x();
       default: assert(0); return -1;
     }
   }

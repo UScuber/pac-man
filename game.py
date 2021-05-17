@@ -40,7 +40,7 @@ def update():
     cpp.update_pos()
     #ここに処理を書く
     for i in range(5):
-      x, y = cpp.get_pos(i*2), cpp.get_pos(i*2 + 1)
+      x, y = cpp.get_posx(i), cpp.get_posy(i)
       canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
 
     
@@ -85,19 +85,19 @@ def main():
   
 
   img = tk.PhotoImage(file= "images/pacman/cirright.png")
-  canvas.create_image((cpp.get_pos(0) / cpp.sizec + 0.5) * size,  (cpp.get_pos(1) / cpp.sizec + 0.5) * size, image=img, tag="pacman")
+  canvas.create_image((cpp.get_posx(0) / cpp.sizec + 0.5) * size,  (cpp.get_posy(0) / cpp.sizec + 0.5) * size, image=img, tag="pacman")
   objects.append("pacman")
   img2 = tk.PhotoImage(file= "images/red/up0.png")
-  canvas.create_image((cpp.get_pos(2) / cpp.sizec + 0.5) * size,  (cpp.get_pos(3) / cpp.sizec + 0.5) * size, image=img2, tag="red")
+  canvas.create_image((cpp.get_posx(1) / cpp.sizec + 0.5) * size,  (cpp.get_posy(1) / cpp.sizec + 0.5) * size, image=img2, tag="red")
   objects.append("red")
   img3 = tk.PhotoImage(file= "images/blue/up0.png")
-  canvas.create_image((cpp.get_pos(4) / cpp.sizec + 0.5) * size,  (cpp.get_pos(5) / cpp.sizec + 0.5) * size, image=img3, tag="blue")
+  canvas.create_image((cpp.get_posx(2) / cpp.sizec + 0.5) * size,  (cpp.get_posy(2) / cpp.sizec + 0.5) * size, image=img3, tag="blue")
   objects.append("blue")
   img4 = tk.PhotoImage(file= "images/orange/up0.png")
-  canvas.create_image((cpp.get_pos(6) / cpp.sizec + 0.5) * size,  (cpp.get_pos(7) / cpp.sizec + 0.5) * size, image=img4, tag="orange")
+  canvas.create_image((cpp.get_posx(3) / cpp.sizec + 0.5) * size,  (cpp.get_posy(3) / cpp.sizec + 0.5) * size, image=img4, tag="orange")
   objects.append("orange")
   img5 = tk.PhotoImage(file= "images/pink/up0.png")
-  canvas.create_image((cpp.get_pos(8) / cpp.sizec + 0.5) * size,  (cpp.get_pos(9) / cpp.sizec + 0.5) * size, image=img5, tag="pink")
+  canvas.create_image((cpp.get_posx(4) / cpp.sizec + 0.5) * size,  (cpp.get_posy(4) / cpp.sizec + 0.5) * size, image=img5, tag="pink")
   objects.append("pink")
 
 

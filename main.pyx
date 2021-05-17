@@ -8,7 +8,8 @@ cdef extern from "game.hpp":
 cdef extern from "game.hpp" namespace "python":
   cdef int get_field_val(int y, int x)
   cdef void update()
-  cdef int get_move_pos(int i)
+  cdef int get_move_posy(int i)
+  cdef int get_move_posx(int i)
 
 #同じ名前だとコンパイルエラーが出るため
 #Pythonで使用する時には末尾に_pをつけることにする
@@ -23,5 +24,8 @@ def get_field(int y, int x):
 def update_pos():
   update()
 
-def get_pos(int i):
-  return get_move_pos(i)
+def get_posy(int i):
+  return get_move_posy(i)
+
+def get_posx(int i):
+  return get_move_posx(i)
