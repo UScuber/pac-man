@@ -1079,7 +1079,7 @@ static PyObject *__pyx_codeobj__2;
 /* Late includes */
 
 /* "main.pyx":14
- * w = width
+ * w = f_width
  * 
  * def get_field(int y, int x):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
@@ -1165,6 +1165,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
  * def get_field(int y, int x):
  *   return get_field_val(y, x)             # <<<<<<<<<<<<<<
  * 
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyInt_From_int(get_field_val(__pyx_v_y, __pyx_v_x)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 15, __pyx_L1_error)
@@ -1174,7 +1175,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
   goto __pyx_L0;
 
   /* "main.pyx":14
- * w = width
+ * w = f_width
  * 
  * def get_field(int y, int x):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
@@ -1260,7 +1261,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
   /* "main.pyx":14
- * w = width
+ * w = f_width
  * 
  * def get_field(int y, int x):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
@@ -1553,29 +1554,29 @@ if (!__Pyx_RefNanny) {
   /* "main.pyx":11
  * #Python_p
  * 
- * h = height             # <<<<<<<<<<<<<<
- * w = width
+ * h = f_height             # <<<<<<<<<<<<<<
+ * w = f_width
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(height); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(f_height); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 11, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_h, __pyx_t_1) < 0) __PYX_ERR(0, 11, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":12
  * 
- * h = height
- * w = width             # <<<<<<<<<<<<<<
+ * h = f_height
+ * w = f_width             # <<<<<<<<<<<<<<
  * 
  * def get_field(int y, int x):
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(width); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(f_width); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_w, __pyx_t_1) < 0) __PYX_ERR(0, 12, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":14
- * w = width
+ * w = f_width
  * 
  * def get_field(int y, int x):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
