@@ -34,20 +34,14 @@ def input_key(event):
     pass
 
 
-#画像の位置の更新
-def update_poses():
+#画像の位置や向きなどの更新
+def update_images():
   global canvas
   for i in range(len(objects)):
     x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
     canvas.itemconfig(objects[i], image= images[i][r][flip])
     canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
 
-#画像の変更(flipやrotate)
-def change_images():
-  global canvas
-  for i in range(len(objects)):
-    r = cpp.get_rot(i)
-    canvas.itemconfig(objects[i], image= images[i][r][flip])
 
 #盤面の更新
 def update():
@@ -55,16 +49,10 @@ def update():
   cnt = 0
   while True:
     cpp.update_pos()
-    #ここに処理を書く
-    update_poses()
-
     
-    if cnt % flip_freq == 0:
-      flip ^= 1
-      #画像の変更
-      change_images()
+    if cnt % flip_freq == 0:  flip ^= 1
     
-
+    update_images()
 
     sys.stdout.flush()
     time.sleep(flame / 1000)
@@ -106,7 +94,6 @@ def main():
     x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
     canvas.create_image((x / cpp.sizec + 0.5) * size, (y / cpp.sizec + 0.5) * size,
                         image= images[i][r][flip], tag= objects[i])
-
 
 
 
