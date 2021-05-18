@@ -10,14 +10,15 @@ canvas.move(tag_name, x, y)
 -> tag_nameをx軸にx,y軸にy平行移動する
 """
 
-flame = 18 #ms
+flame = 17 #ms
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 size = 28
 objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
-images = [None] * len(objects)
+#all of images
+images = [[[[None],[None]] for _ in range(4)] for _ in range(len(objects))]
 
 #キーボードからの入力
 def input_key(event):
@@ -32,33 +33,21 @@ def input_key(event):
   if key_state == "Down":
     pass
 
-#画像のパスを返す
-def get_image_name(i):
-  r = cpp.get_rot(i)
-  return "images/"+objects[i]+"/"+direc_name[r]+str(flip) +".png"
 
 #画像の位置の更新
 def update_poses():
   global canvas
   for i in range(len(objects)):
-    x, y = cpp.get_posx(i), cpp.get_posy(i)
+    x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
+    canvas.itemconfig(objects[i], image= images[i][r][flip])
     canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
 
 #画像の変更(flipやrotate)
-def update_images():
-  global canvas, images
-  images = [None] * len(objects)
-  for i in range(len(objects)):
-    img_name = get_image_name(i)
-    images[i] = tk.PhotoImage(file= img_name)
-    canvas.itemconfig(objects[i], image= images[i])
-
-#回転の更新
-def update_rotate(i):
+def change_images():
   global canvas
-  img_name = get_image_name(i)
-  images[i] = tk.PhotoImage(file= img_name)
-  canvas.itemconfig(objects[i], image= images[i])
+  for i in range(len(objects)):
+    r = cpp.get_rot(i)
+    canvas.itemconfig(objects[i], image= images[i][r][flip])
 
 #盤面の更新
 def update():
@@ -73,7 +62,7 @@ def update():
     if cnt % flip_freq == 0:
       flip ^= 1
       #画像の変更
-      update_images()
+      change_images()
     
 
 
@@ -82,6 +71,12 @@ def update():
     cnt += 1
   
 
+def read_all_images():
+  for i in range(len(objects)):
+    for j in range(4):
+      for k in range(2):
+        img_name = "images/"+objects[i]+"/"+direc_name[j]+str(k) +".png"
+        images[i][j][k] = tk.PhotoImage(file= img_name)
 
 #ウィンドウの作成
 def main():
@@ -103,12 +98,14 @@ def main():
       board[i][j] = tk.PhotoImage(file= img_name)
       canvas.create_image((j+1)*size, (i+1)*size, image= board[i][j])
 
-  
+
+  read_all_images()
+
   #pacman,enemiesを描画
   for i in range(len(objects)):
-    img_name = get_image_name(i)
-    x, y = cpp.get_posx(i), cpp.get_posy(i)
-    canvas.create_image((x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size,  image= images[i], tag= objects[i])
+    x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
+    canvas.create_image((x / cpp.sizec + 0.5) * size, (y / cpp.sizec + 0.5) * size,
+                        image= images[i][r][flip], tag= objects[i])
 
 
 
