@@ -10,6 +10,7 @@ cdef extern from "game.hpp" namespace "python":
   cdef void update()
   cdef int get_move_posy(int i)
   cdef int get_move_posx(int i)
+  cdef int get_move_rot(int i)
 
 #同じ名前だとコンパイルエラーが出るため
 #Pythonで使用する時には末尾に_pをつけることにする
@@ -29,3 +30,6 @@ def get_posy(int i):
 
 def get_posx(int i):
   return get_move_posx(i)
+
+def get_rot(int i):
+  return get_move_rot(i)

@@ -11,10 +11,13 @@ canvas.move(tag_name, x, y)
 """
 
 flame = 18 #ms
-flip_freq = 6 #何フレームごとに画像を切り替えるか
+flip_freq = 4 #何フレームごとに画像を切り替えるか
+flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 size = 28
-objects = []
+objects = ["pacman", "red", "blue", "orange", "pink"]
+direc_name = ["up", "left", "down", "right"]
+images = [None] * len(objects)
 
 #キーボードからの入力
 def input_key(event):
@@ -29,29 +32,48 @@ def input_key(event):
   if key_state == "Down":
     pass
 
+#画像のパスを返す
+def get_image_name(i):
+  r = cpp.get_rot(i)
+  return "images/"+objects[i]+"/"+direc_name[r]+str(flip) +".png"
 
+#画像の位置の更新
+def update_poses():
+  global canvas
+  for i in range(len(objects)):
+    x, y = cpp.get_posx(i), cpp.get_posy(i)
+    canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
+
+#画像の変更(flipやrotate)
+def update_images():
+  global canvas, images
+  images = [None] * len(objects)
+  for i in range(len(objects)):
+    img_name = get_image_name(i)
+    images[i] = tk.PhotoImage(file= img_name)
+    canvas.itemconfig(objects[i], image= images[i])
+
+#回転の更新
+def update_rotate(i):
+  global canvas
+  img_name = get_image_name(i)
+  images[i] = tk.PhotoImage(file= img_name)
+  canvas.itemconfig(objects[i], image= images[i])
 
 #盤面の更新
 def update():
-  global canvas
-  flip = False
+  global canvas, flip
   cnt = 0
   while True:
     cpp.update_pos()
     #ここに処理を書く
-    for i in range(5):
-      x, y = cpp.get_posx(i), cpp.get_posy(i)
-      canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
+    update_poses()
 
     
     if cnt % flip_freq == 0:
-      flip ^= True
-      if flip:
-        img = tk.PhotoImage(file= "images/pacman/eatright.png")
-        canvas.itemconfig("pacman", image= img)
-      else:
-        img = tk.PhotoImage(file= "images/pacman/cirright.png")
-        canvas.itemconfig("pacman", image= img)
+      flip ^= 1
+      #画像の変更
+      update_images()
     
 
 
@@ -72,33 +94,21 @@ def main():
 
   #boardに画像を取り込む
   board = [[None for _ in range(cpp.w)] for _ in range(cpp.h)]
+  #盤面の描画
   for i in range(cpp.h):
     for j in range(cpp.w):
       img_name = "images/block/none.png"
       if cpp.get_field(i, j) == 1:
         img_name = "images/block/wall.png"
       board[i][j] = tk.PhotoImage(file= img_name)
-
-  for i in range(cpp.h):
-    for j in range(cpp.w):
       canvas.create_image((j+1)*size, (i+1)*size, image= board[i][j])
-  
 
-  img = tk.PhotoImage(file= "images/pacman/cirright.png")
-  canvas.create_image((cpp.get_posx(0) / cpp.sizec + 0.5) * size,  (cpp.get_posy(0) / cpp.sizec + 0.5) * size, image=img, tag="pacman")
-  objects.append("pacman")
-  img2 = tk.PhotoImage(file= "images/red/up0.png")
-  canvas.create_image((cpp.get_posx(1) / cpp.sizec + 0.5) * size,  (cpp.get_posy(1) / cpp.sizec + 0.5) * size, image=img2, tag="red")
-  objects.append("red")
-  img3 = tk.PhotoImage(file= "images/blue/up0.png")
-  canvas.create_image((cpp.get_posx(2) / cpp.sizec + 0.5) * size,  (cpp.get_posy(2) / cpp.sizec + 0.5) * size, image=img3, tag="blue")
-  objects.append("blue")
-  img4 = tk.PhotoImage(file= "images/orange/up0.png")
-  canvas.create_image((cpp.get_posx(3) / cpp.sizec + 0.5) * size,  (cpp.get_posy(3) / cpp.sizec + 0.5) * size, image=img4, tag="orange")
-  objects.append("orange")
-  img5 = tk.PhotoImage(file= "images/pink/up0.png")
-  canvas.create_image((cpp.get_posx(4) / cpp.sizec + 0.5) * size,  (cpp.get_posy(4) / cpp.sizec + 0.5) * size, image=img5, tag="pink")
-  objects.append("pink")
+  
+  #pacman,enemiesを描画
+  for i in range(len(objects)):
+    img_name = get_image_name(i)
+    x, y = cpp.get_posx(i), cpp.get_posy(i)
+    canvas.create_image((x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size,  image= images[i], tag= objects[i])
 
 
 
@@ -108,7 +118,7 @@ def main():
 
 
   #updateを別のスレッドで動かす
-  thread1 = threading.Thread(target = update)
+  thread1 = threading.Thread(target= update)
   thread1.setDaemon(True)
   thread1.start()
 

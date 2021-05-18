@@ -114,5 +114,16 @@ namespace python {
       default: assert(0); return -1;
     }
   }
+  int get_move_rot(int i){
+    assert(0 <= i && i < 5);
+    switch(i){
+      case 0: return pacman.get_r();
+      case 1: return red_enemy.get_r();
+      case 2: return blue_enemy.get_r();
+      case 3: return oran_enemy.get_r();
+      case 4: return pink_enemy.get_r();
+      default: assert(0); return -1;
+    }
+  }
 
 };
