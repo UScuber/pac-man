@@ -77,13 +77,15 @@ position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
 
 
-//前回の状態からどれだけ動くのかを出力する
-//それを受けてpythonで移動の処理をする
-namespace python {
-  //Pythonから毎フレーム呼び出される
+//Pythonから毎フレーム呼び出される
   void update(){
     pacman.move(0, 1);
   }
+
+
+//前回の状態からどれだけ動くのかを出力する
+//それを受けてpythonで移動の処理をする
+namespace python {
   //fieldの値を取得
   int get_field_val(int y, int x){
     assert(0 <= y && y < f_height);
@@ -126,4 +128,8 @@ namespace python {
     }
   }
 
+  //パックマンの方向移動
+  void turn(int r){
+    pacman.rotate(r);
+  }
 };

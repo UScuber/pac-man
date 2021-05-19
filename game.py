@@ -19,15 +19,15 @@ images = [[[[None],[None]] for _ in range(4)] for _ in range(len(objects))]
 #キーボードからの入力
 def input_key(event):
   key_state = event.keysym
-  print(key_state)
-  if key_state == "Right":
-    pass
-  if key_state == "Left":
-    pass
+  
   if key_state == "Up":
-    pass
+    cpp.rotate(0)
+  if key_state == "Left":
+    cpp.rotate(1)
   if key_state == "Down":
-    pass
+    cpp.rotate(2)
+  if key_state == "Right":
+    cpp.rotate(3)
 
 
 #画像の位置や向きなどの更新
