@@ -1061,9 +1061,7 @@ static const char __pyx_k_name[] = "__name__";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_sizec[] = "sizec";
 static const char __pyx_k_gamelib[] = "gamelib";
-static const char __pyx_k_get_rot[] = "get_rot";
-static const char __pyx_k_get_posx[] = "get_posx";
-static const char __pyx_k_get_posy[] = "get_posy";
+static const char __pyx_k_get_xyr[] = "get_xyr";
 static const char __pyx_k_main_pyx[] = "main.pyx";
 static const char __pyx_k_get_field[] = "get_field";
 static const char __pyx_k_update_pos[] = "update_pos";
@@ -1071,9 +1069,7 @@ static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_gamelib;
 static PyObject *__pyx_n_s_get_field;
-static PyObject *__pyx_n_s_get_posx;
-static PyObject *__pyx_n_s_get_posy;
-static PyObject *__pyx_n_s_get_rot;
+static PyObject *__pyx_n_s_get_xyr;
 static PyObject *__pyx_n_s_h;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_main;
@@ -1087,18 +1083,12 @@ static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_y;
 static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_y, int __pyx_v_x); /* proto */
 static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7gamelib_4get_posy(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i); /* proto */
-static PyObject *__pyx_pf_7gamelib_6get_posx(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i); /* proto */
-static PyObject *__pyx_pf_7gamelib_8get_rot(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i); /* proto */
+static PyObject *__pyx_pf_7gamelib_4get_xyr(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__4;
-static PyObject *__pyx_tuple__6;
-static PyObject *__pyx_tuple__8;
 static PyObject *__pyx_codeobj__2;
 static PyObject *__pyx_codeobj__3;
 static PyObject *__pyx_codeobj__5;
-static PyObject *__pyx_codeobj__7;
-static PyObject *__pyx_codeobj__9;
 /* Late includes */
 
 /* "main.pyx":22
@@ -1248,7 +1238,7 @@ static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_sel
  * def update_pos():
  *   update()             # <<<<<<<<<<<<<<
  * 
- * def get_posy(int i):
+ * def get_xyr(i):
  */
   python::update();
 
@@ -1270,223 +1260,81 @@ static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_sel
 /* "main.pyx":28
  *   update()
  * 
- * def get_posy(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posy(i)
- * 
+ * def get_xyr(i):             # <<<<<<<<<<<<<<
+ *   return get_posx(i), get_posy(i), get_rot(i)
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_5get_posy(PyObject *__pyx_self, PyObject *__pyx_arg_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_5get_posy = {"get_posy", (PyCFunction)__pyx_pw_7gamelib_5get_posy, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_5get_posy(PyObject *__pyx_self, PyObject *__pyx_arg_i) {
-  int __pyx_v_i;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
+static PyObject *__pyx_pw_7gamelib_5get_xyr(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_5get_xyr = {"get_xyr", (PyCFunction)__pyx_pw_7gamelib_5get_xyr, METH_O, 0};
+static PyObject *__pyx_pw_7gamelib_5get_xyr(PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("get_posy (wrapper)", 0);
-  assert(__pyx_arg_i); {
-    __pyx_v_i = __Pyx_PyInt_As_int(__pyx_arg_i); if (unlikely((__pyx_v_i == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 28, __pyx_L3_error)
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("gamelib.get_posy", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7gamelib_4get_posy(__pyx_self, ((int)__pyx_v_i));
+  __Pyx_RefNannySetupContext("get_xyr (wrapper)", 0);
+  __pyx_r = __pyx_pf_7gamelib_4get_xyr(__pyx_self, ((PyObject *)__pyx_v_i));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7gamelib_4get_posy(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i) {
+static PyObject *__pyx_pf_7gamelib_4get_xyr(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
+  int __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("get_posy", 0);
+  __Pyx_RefNannySetupContext("get_xyr", 0);
 
   /* "main.pyx":29
  * 
- * def get_posy(int i):
- *   return get_move_posy(i)             # <<<<<<<<<<<<<<
- * 
- * def get_posx(int i):
+ * def get_xyr(i):
+ *   return get_posx(i), get_posy(i), get_rot(i)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_move_posy(__pyx_v_i)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 29, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(python::get_posx(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(python::get_posy(__pyx_t_1)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(python::get_rot(__pyx_t_1)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_4);
+  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_3);
+  __Pyx_GIVEREF(__pyx_t_4);
+  PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_t_4);
+  __pyx_t_2 = 0;
+  __pyx_t_3 = 0;
+  __pyx_t_4 = 0;
+  __pyx_r = __pyx_t_5;
+  __pyx_t_5 = 0;
   goto __pyx_L0;
 
   /* "main.pyx":28
  *   update()
  * 
- * def get_posy(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posy(i)
- * 
+ * def get_xyr(i):             # <<<<<<<<<<<<<<
+ *   return get_posx(i), get_posy(i), get_rot(i)
  */
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("gamelib.get_posy", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "main.pyx":31
- *   return get_move_posy(i)
- * 
- * def get_posx(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posx(i)
- * 
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_7get_posx(PyObject *__pyx_self, PyObject *__pyx_arg_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_7get_posx = {"get_posx", (PyCFunction)__pyx_pw_7gamelib_7get_posx, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_7get_posx(PyObject *__pyx_self, PyObject *__pyx_arg_i) {
-  int __pyx_v_i;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("get_posx (wrapper)", 0);
-  assert(__pyx_arg_i); {
-    __pyx_v_i = __Pyx_PyInt_As_int(__pyx_arg_i); if (unlikely((__pyx_v_i == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 31, __pyx_L3_error)
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("gamelib.get_posx", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7gamelib_6get_posx(__pyx_self, ((int)__pyx_v_i));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_7gamelib_6get_posx(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("get_posx", 0);
-
-  /* "main.pyx":32
- * 
- * def get_posx(int i):
- *   return get_move_posx(i)             # <<<<<<<<<<<<<<
- * 
- * def get_rot(int i):
- */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_move_posx(__pyx_v_i)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* "main.pyx":31
- *   return get_move_posy(i)
- * 
- * def get_posx(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posx(i)
- * 
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("gamelib.get_posx", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "main.pyx":34
- *   return get_move_posx(i)
- * 
- * def get_rot(int i):             # <<<<<<<<<<<<<<
- *   return get_move_rot(i)
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_9get_rot(PyObject *__pyx_self, PyObject *__pyx_arg_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_9get_rot = {"get_rot", (PyCFunction)__pyx_pw_7gamelib_9get_rot, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_9get_rot(PyObject *__pyx_self, PyObject *__pyx_arg_i) {
-  int __pyx_v_i;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("get_rot (wrapper)", 0);
-  assert(__pyx_arg_i); {
-    __pyx_v_i = __Pyx_PyInt_As_int(__pyx_arg_i); if (unlikely((__pyx_v_i == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L3_error)
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("gamelib.get_rot", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_7gamelib_8get_rot(__pyx_self, ((int)__pyx_v_i));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_7gamelib_8get_rot(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_i) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("get_rot", 0);
-
-  /* "main.pyx":35
- * 
- * def get_rot(int i):
- *   return get_move_rot(i)             # <<<<<<<<<<<<<<
- */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_move_rot(__pyx_v_i)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 35, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* "main.pyx":34
- *   return get_move_posx(i)
- * 
- * def get_rot(int i):             # <<<<<<<<<<<<<<
- *   return get_move_rot(i)
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("gamelib.get_rot", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_AddTraceback("gamelib.get_xyr", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -1543,9 +1391,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_gamelib, __pyx_k_gamelib, sizeof(__pyx_k_gamelib), 0, 0, 1, 1},
   {&__pyx_n_s_get_field, __pyx_k_get_field, sizeof(__pyx_k_get_field), 0, 0, 1, 1},
-  {&__pyx_n_s_get_posx, __pyx_k_get_posx, sizeof(__pyx_k_get_posx), 0, 0, 1, 1},
-  {&__pyx_n_s_get_posy, __pyx_k_get_posy, sizeof(__pyx_k_get_posy), 0, 0, 1, 1},
-  {&__pyx_n_s_get_rot, __pyx_k_get_rot, sizeof(__pyx_k_get_rot), 0, 0, 1, 1},
+  {&__pyx_n_s_get_xyr, __pyx_k_get_xyr, sizeof(__pyx_k_get_xyr), 0, 0, 1, 1},
   {&__pyx_n_s_h, __pyx_k_h, sizeof(__pyx_k_h), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
@@ -1591,37 +1437,13 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "main.pyx":28
  *   update()
  * 
- * def get_posy(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posy(i)
- * 
+ * def get_xyr(i):             # <<<<<<<<<<<<<<
+ *   return get_posx(i), get_posy(i), get_rot(i)
  */
-  __pyx_tuple__4 = PyTuple_Pack(2, __pyx_n_s_i, __pyx_n_s_i); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_tuple__4 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
-  __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_posy, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 28, __pyx_L1_error)
-
-  /* "main.pyx":31
- *   return get_move_posy(i)
- * 
- * def get_posx(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posx(i)
- * 
- */
-  __pyx_tuple__6 = PyTuple_Pack(2, __pyx_n_s_i, __pyx_n_s_i); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 31, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__6);
-  __Pyx_GIVEREF(__pyx_tuple__6);
-  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_posx, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 31, __pyx_L1_error)
-
-  /* "main.pyx":34
- *   return get_move_posx(i)
- * 
- * def get_rot(int i):             # <<<<<<<<<<<<<<
- *   return get_move_rot(i)
- */
-  __pyx_tuple__8 = PyTuple_Pack(2, __pyx_n_s_i, __pyx_n_s_i); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 34, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__8);
-  __Pyx_GIVEREF(__pyx_tuple__8);
-  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_rot, 34, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__4, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_xyr, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -1965,36 +1787,12 @@ if (!__Pyx_RefNanny) {
   /* "main.pyx":28
  *   update()
  * 
- * def get_posy(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posy(i)
- * 
+ * def get_xyr(i):             # <<<<<<<<<<<<<<
+ *   return get_posx(i), get_posy(i), get_rot(i)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_5get_posy, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_5get_xyr, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_posy, __pyx_t_1) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "main.pyx":31
- *   return get_move_posy(i)
- * 
- * def get_posx(int i):             # <<<<<<<<<<<<<<
- *   return get_move_posx(i)
- * 
- */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_7get_posx, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_posx, __pyx_t_1) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "main.pyx":34
- *   return get_move_posx(i)
- * 
- * def get_rot(int i):             # <<<<<<<<<<<<<<
- *   return get_move_rot(i)
- */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_9get_rot, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_rot, __pyx_t_1) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_xyr, __pyx_t_1) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":1

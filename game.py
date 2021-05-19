@@ -5,16 +5,12 @@ import time
 import sys
 import gamelib as cpp
 
-"""メモ
-canvas.move(tag_name, x, y)
--> tag_nameをx軸にx,y軸にy平行移動する
-"""
 
 flame = 17 #ms
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
-size = 28
+size = 28 #画像1枚の大きさ
 objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
 #all of images
@@ -38,7 +34,7 @@ def input_key(event):
 def update_images():
   global canvas
   for i in range(len(objects)):
-    x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
+    x, y, r = cpp.get_xyr(i)
     canvas.itemconfig(objects[i], image= images[i][r][flip])
     canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
 
@@ -91,7 +87,7 @@ def main():
 
   #pacman,enemiesを描画
   for i in range(len(objects)):
-    x, y, r = cpp.get_posx(i), cpp.get_posy(i), cpp.get_rot(i)
+    x, y, r = cpp.get_xyr(i)
     canvas.create_image((x / cpp.sizec + 0.5) * size, (y / cpp.sizec + 0.5) * size,
                         image= images[i][r][flip], tag= objects[i])
 

@@ -92,7 +92,7 @@ namespace python {
   }
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
-  int get_move_posy(int i){
+  int get_posy(int i){
     assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_y();
@@ -103,7 +103,7 @@ namespace python {
       default: assert(0); return -1;
     }
   }
-  int get_move_posx(int i){
+  int get_posx(int i){
     assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_x();
@@ -114,7 +114,7 @@ namespace python {
       default: assert(0); return -1;
     }
   }
-  int get_move_rot(int i){
+  int get_rot(int i){
     assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_r();
