@@ -4,10 +4,10 @@ cdef extern from "game.hpp":
   cdef int f_height
   cdef int f_width
   cdef int size
+  cdef int get_field_val(int y, int x)
   cdef void update()
 
 cdef extern from "game.hpp" namespace "python":
-  cdef int get_field_val(int y, int x)
   cdef int get_posy(int i)
   cdef int get_posx(int i)
   cdef int get_rot(int i)
@@ -31,5 +31,15 @@ def get_xyr(i):
 
 def rotate(r):
   turn(r)
+
+
+
+
+
+
+
+
+
+
 
 

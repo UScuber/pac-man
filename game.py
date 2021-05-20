@@ -6,7 +6,7 @@ import sys
 import gamelib as cpp
 
 
-flame = 17 #ms
+flame = 15 #ms
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
@@ -15,19 +15,21 @@ objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
 #all of images
 images = [[[[None],[None]] for _ in range(4)] for _ in range(len(objects))]
+ispress_key = [False] * 4
+key_name = ["Right", "Down", "Left", "Up"] #逆向きにする
 
 #キーボードからの入力
-def input_key(event):
+def press_key(event):
   key_state = event.keysym
-  
-  if key_state == "Up":
-    cpp.rotate(0)
-  if key_state == "Left":
-    cpp.rotate(1)
-  if key_state == "Down":
-    cpp.rotate(2)
-  if key_state == "Right":
-    cpp.rotate(3)
+  for i in range(len(key_name)):
+    if key_state == key_name[i]:
+      ispress_key[i] = True
+
+def release_key(event):
+  key_state = event.keysym
+  for i in range(len(key_name)):
+    if key_state == key_name[i]:
+      ispress_key[i] = False
 
 
 #画像の位置や向きなどの更新
@@ -45,10 +47,12 @@ def update():
   cnt = 0
   while True:
     cpp.update_pos()
-    
     if cnt % flip_freq == 0:  flip ^= 1
-    
     update_images()
+
+    for i in range(len(ispress_key)):
+      if ispress_key[i] == True:
+        cpp.rotate(3 - i)
 
     sys.stdout.flush()
     time.sleep(flame / 1000)
@@ -93,7 +97,8 @@ def main():
 
 
 
-  root.bind("<KeyPress>", input_key)
+  root.bind("<KeyPress>", press_key)
+  root.bind("<KeyRelease>", release_key)
   canvas.pack()
 
 

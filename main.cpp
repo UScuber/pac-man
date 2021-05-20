@@ -1188,7 +1188,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
  * def update_pos():
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_field_val(__pyx_v_y, __pyx_v_x)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(get_field_val(__pyx_v_y, __pyx_v_x)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;

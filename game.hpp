@@ -21,6 +21,8 @@ enum{
   pac, //Pac-Man
   red, blue, orange, pink //enemies
 };
+int dy[] = {-1,0,1,0};
+int dx[] = {0,-1,0,1};
 //フィールドの初期状態
 int field[f_height][f_width] = {
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
@@ -32,20 +34,25 @@ int field[f_height][f_width] = {
   {wall,none,none,none,none,wall,none,none,none,wall,none,none,none,wall,none,none,none,none,wall},
   {wall,wall,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,wall,wall},
   {wall,wall,wall,wall,none,wall,none,none,none,none,none,none,none,wall,none,wall,wall,wall,wall},
-  {wall,wall,wall,wall,none,wall,none,wall,wall,pink,wall,wall,none,wall,none,wall,wall,wall,wall},
-  {none,none,none,none,none,none,none,wall,blue,orange,blue,wall,none,none,none,none,none,none,none},
+  {wall,wall,wall,wall,none,wall,none,wall,wall,none,wall,wall,none,wall,none,wall,wall,wall,wall},
+  {none,none,none,none,none,none,none,wall,none,none,none,wall,none,none,none,none,none,none,none},
   {wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall},
   {wall,wall,wall,wall,none,wall,none,none,none,none,none,none,none,wall,none,wall,wall,wall,wall},
   {wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall},
   {wall,none,none,none,none,none,none,none,none,wall,none,none,none,none,none,none,none,none,wall},
   {wall,none,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,none,wall},
-  {wall,none,none,wall,none,none,none,none,none,pac ,none,none,none,none,none,wall,none,none,wall},
+  {wall,none,none,wall,none,none,none,none,none,none,none,none,none,none,none,wall,none,none,wall},
   {wall,wall,none,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,none,wall,wall},
   {wall,none,none,none,none,wall,none,none,none,wall,none,none,none,wall,none,none,none,none,wall},
   {wall,none,wall,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,wall,none,wall},
   {wall,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,wall},
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
 };
+//fieldの値を取得
+int get_field_val(int y, int x){
+  if(y < 0 || y >= f_height || x < 0 || x >= f_width) return -1;
+  return field[y][x];
+}
 
 //direction: 0,1,2,3 = up,left,down,right
 //方向は小さいほうから優先度高め
@@ -54,18 +61,28 @@ struct position {
   int get_y(){ return y; }
   int get_x(){ return x; }
   int get_r(){ return rot; }
-  void move(int dy, int dx){
-    y += dy, x += dx;
-    assert(0 <= y && y < height);
-    assert(0 <= x && x < width);
-  }
+  int get_spd(){ return spd; }
   //方向をrにセット
   void rotate(int r){
     assert(0 <= r && r < 4);
     rot = r;
   }
+  bool move(){
+    if(y % size || x % size){
+      y += dy[rot] * spd;
+      x += dx[rot] * spd;
+      return true;
+    }
+    int ty = y / size + dy[rot];
+    int tx = x / size + dx[rot];
+    if(get_field_val(ty, tx) == wall) return false;
+    y += dy[rot] * spd;
+    x += dx[rot] * spd;
+    return true;
+  }
   private:
   int y,x,rot;
+  int spd = 4;
 };
 position pacman(pac_pos_y*size, pac_pos_x*size, 3); //初期状態は右を向いている
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
@@ -78,20 +95,14 @@ position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
 
 //Pythonから毎フレーム呼び出される
-  void update(){
-    pacman.move(0, 1);
-  }
+void update(){
+  pacman.move();
+}
 
 
 //前回の状態からどれだけ動くのかを出力する
 //それを受けてpythonで移動の処理をする
 namespace python {
-  //fieldの値を取得
-  int get_field_val(int y, int x){
-    assert(0 <= y && y < f_height);
-    assert(0 <= x && x < f_width) ;
-    return field[y][x];
-  }
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
   int get_posy(int i){
@@ -130,6 +141,14 @@ namespace python {
 
   //パックマンの方向移動
   void turn(int r){
-    pacman.rotate(r);
+    int y = pacman.get_y();
+    int x = pacman.get_x();
+    if(y % size || x % size) return;
+
+    y /= size; x /= size;
+    y += dy[r]; x += dx[r];
+    if(get_field_val(y, x) != wall){
+      pacman.rotate(r);
+    }
   }
 };
