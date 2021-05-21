@@ -1,5 +1,7 @@
 #include <iostream>
 #include <cassert>
+#include <set>
+#include <tuple>
 
 //ブロックの数（縦、横）
 constexpr int f_height = 22;
@@ -11,11 +13,12 @@ constexpr int height = (f_height - 1) * size + 1;
 constexpr int width = (f_width - 1) * size + 1;
 
 constexpr int pac_pos_y = 16, pac_pos_x = 9;
-constexpr int red_pos_y = 10, red_pos_x = 10;
+constexpr int red_pos_y = 10 - 1, red_pos_x = 10 - 1;
 constexpr int blue_pos_y = 10, blue_pos_x = 8;
 constexpr int oran_pos_y = 10, oran_pos_x = 9;
 constexpr int pink_pos_y = 9, pink_pos_x = 9;
 
+constexpr int inf = 1e9;
 enum{
   none, wall, //黒、壁
   pac, //Pac-Man
@@ -48,6 +51,12 @@ int field[f_height][f_width] = {
   {wall,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,wall},
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
 };
+
+//enemyが入れないところ{y, x, r}
+std::set<std::tuple<int,int,int>> isgate{
+  {9,9, 2}, {7,8, 0}, {7,10, 0}, {15,8, 0}, {15,10, 0},
+};
+
 //fieldの値を取得
 int get_field_val(int y, int x){
   if(y < 0 || y >= f_height || x < 0 || x >= f_width) return -1;
@@ -58,10 +67,10 @@ int get_field_val(int y, int x){
 //方向は小さいほうから優先度高め
 struct position {
   position(int y, int x, int r = 0): y(y), x(x), rot(r){}
-  int get_y(){ return y; }
-  int get_x(){ return x; }
-  int get_r(){ return rot; }
-  int get_spd(){ return spd; }
+  int get_y() const{ return y; }
+  int get_x() const{ return x; }
+  int get_r() const{ return rot; }
+  int get_spd() const{ return spd; }
   //方向をrにセット
   void rotate(int r){
     assert(0 <= r && r < 4);
@@ -80,6 +89,21 @@ struct position {
     x += dx[rot] * spd;
     return true;
   }
+  //thisとaとの距離
+  int dist(const position &a){
+    int ay = a.get_y(), ax = a.get_x();
+    return (ay-y)*(ay-y) + (ax-x)*(ax-x);
+  }
+  //thisと(y*size,x*size)との距離
+  int dist(int ty, int tx){
+    return (y-ty*size)*(y-ty*size) + (x-tx*size)*(x-tx*size);
+  }
+  bool opposite(int r){
+    return (rot + 2) % 4 == r;
+  }
+  bool ison_block(){
+    return !(y % size || x % size);
+  }
   private:
   int y,x,rot;
   int spd = 4;
@@ -91,12 +115,41 @@ position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
 position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
 
+void red_move(){
+  if(!red_enemy.ison_block()) return;
+  int y = red_enemy.get_y();
+  int x = red_enemy.get_x();
+  y /= size; x /= size;
+
+  int dir = -1, dist = inf;
+  for(int i = 0; i < 4; i++){
+    int ny = y + dy[i];
+    int nx = x + dx[i];
+
+    if(red_enemy.opposite(i)) continue;
+    if(get_field_val(ny, nx) == wall) continue;
+    if(isgate.count(std::make_tuple(ny,nx, i))) continue;
+    int d = pacman.dist(ny, nx);
+    if(dist > d){
+      dist = d;
+      dir = i;
+    }
+  }
+  if(dir == -1){
+    printf("(y,x) = %d %d ", y,x);
+    printf("error  ");
+  }
+  red_enemy.rotate(dir);
+}
 
 
 
 //Pythonから毎フレーム呼び出される
 void update(){
+  red_move();
+  
   pacman.move();
+  red_enemy.move();
 }
 
 
