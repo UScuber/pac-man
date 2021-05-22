@@ -14,7 +14,7 @@ constexpr int width = (f_width - 1) * size + 1;
 
 constexpr int pac_pos_y = 16, pac_pos_x = 9;
 constexpr int red_pos_y = 10 - 1, red_pos_x = 10 - 1;
-constexpr int blue_pos_y = 10, blue_pos_x = 8;
+constexpr int blue_pos_y = 10 - 2, blue_pos_x = 8 + 1;
 constexpr int oran_pos_y = 10, oran_pos_x = 9;
 constexpr int pink_pos_y = 9, pink_pos_x = 9;
 
@@ -96,9 +96,10 @@ struct position {
   }
   //thisと(y*size,x*size)との距離
   int dist(int ty, int tx){
-    return (y-ty*size)*(y-ty*size) + (x-tx*size)*(x-tx*size);
+    ty *= size; tx *= size;
+    return (y-ty)*(y-ty) + (x-tx)*(x-tx);
   }
-  bool opposite(int r){
+  bool isopposite(int r){
     return (rot + 2) % 4 == r;
   }
   bool ison_block(){
@@ -126,9 +127,9 @@ void red_move(){
     int ny = y + dy[i];
     int nx = x + dx[i];
 
-    if(red_enemy.opposite(i)) continue;
+    if(red_enemy.isopposite(i)) continue;
     if(get_field_val(ny, nx) == wall) continue;
-    if(isgate.count(std::make_tuple(ny,nx, i))) continue;
+    if(isgate.count({ny,nx, i})) continue;
     int d = pacman.dist(ny, nx);
     if(dist > d){
       dist = d;
@@ -136,20 +137,50 @@ void red_move(){
     }
   }
   if(dir == -1){
-    printf("(y,x) = %d %d ", y,x);
+    printf("red (y,x) = %d %d ", y,x);
     printf("error  ");
   }
   red_enemy.rotate(dir);
 }
 
+void blue_move(){
+  if(!blue_enemy.ison_block()) return;
+  int y = blue_enemy.get_y();
+  int x = blue_enemy.get_x();
+  y /= size; x /= size;
+  int py = pacman.get_y(), px = pacman.get_x();
+  position pos(2*py - red_enemy.get_y(), 2*px - red_enemy.get_x());
+
+  int dir = -1, dist = inf;
+  for(int i = 0; i < 4; i++){
+    int ny = y + dy[i];
+    int nx = x + dx[i];
+
+    if(blue_enemy.isopposite(i)) continue;
+    if(get_field_val(ny, nx) == wall) continue;
+    if(isgate.count({ny,nx, i})) continue;
+    int d = pos.dist(ny, nx);
+    if(dist > d){
+      dist = d;
+      dir = i;
+    }
+  }
+  if(dir == -1){
+    printf("blue (y,x) = %d %d ", y,x);
+    printf("error  ");
+  }
+  blue_enemy.rotate(dir);
+}
 
 
 //Pythonから毎フレーム呼び出される
 void update(){
   red_move();
+  blue_move();
   
   pacman.move();
   red_enemy.move();
+  blue_enemy.move();
 }
 
 
