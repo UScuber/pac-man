@@ -95,14 +95,14 @@ struct position {
     return (ay-y)*(ay-y) + (ax-x)*(ax-x);
   }
   //thisと(y*size,x*size)との距離
-  int dist(int ty, int tx){
+  int dist(int ty, int tx) const{
     ty *= size; tx *= size;
     return (y-ty)*(y-ty) + (x-tx)*(x-tx);
   }
-  bool isopposite(int r){
+  bool isopposite(int r) const{
     return (rot + 2) % 4 == r;
   }
-  bool ison_block(){
+  bool ison_block() const{
     return !(y % size || x % size);
   }
   private:
@@ -115,11 +115,11 @@ position blue_enemy(blue_pos_y*size, blue_pos_x*size, 0);
 position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
 position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
-
-void red_move(){
-  if(!red_enemy.ison_block()) return;
-  int y = red_enemy.get_y();
-  int x = red_enemy.get_x();
+//方向転換、次に移動すべき回転場所を返す
+int change_direction(const position &obj, const position &target){
+  if(!obj.ison_block()) return obj.get_r();
+  int y = obj.get_y();
+  int x = obj.get_x();
   y /= size; x /= size;
 
   int dir = -1, dist = inf;
@@ -127,36 +127,7 @@ void red_move(){
     int ny = y + dy[i];
     int nx = x + dx[i];
 
-    if(red_enemy.isopposite(i)) continue;
-    if(get_field_val(ny, nx) == wall) continue;
-    if(isgate.count({ny,nx, i})) continue;
-    int d = pacman.dist(ny, nx);
-    if(dist > d){
-      dist = d;
-      dir = i;
-    }
-  }
-  if(dir == -1){
-    printf("red (y,x) = %d %d ", y,x);
-    printf("error  ");
-  }
-  red_enemy.rotate(dir);
-}
-
-void blue_move(){
-  if(!blue_enemy.ison_block()) return;
-  int y = blue_enemy.get_y();
-  int x = blue_enemy.get_x();
-  y /= size; x /= size;
-  int py = pacman.get_y(), px = pacman.get_x();
-  position target(2*py - red_enemy.get_y(), 2*px - red_enemy.get_x());
-
-  int dir = -1, dist = inf;
-  for(int i = 0; i < 4; i++){
-    int ny = y + dy[i];
-    int nx = x + dx[i];
-
-    if(blue_enemy.isopposite(i)) continue;
+    if(obj.isopposite(i)) continue;
     if(get_field_val(ny, nx) == wall) continue;
     if(isgate.count({ny,nx, i})) continue;
     int d = target.dist(ny, nx);
@@ -165,10 +136,28 @@ void blue_move(){
       dir = i;
     }
   }
-  if(dir == -1){
-    printf("blue (y,x) = %d %d ", y,x);
-    printf("error  ");
-  }
+  if(dir == -1) printf("error");
+  return dir;
+}
+
+//pink target
+int pty[] = {-2,0,2,0};
+int ptx[] = {-2,-2,0,2};
+//blue center
+int bcy[] = {-1,0,1,0};
+int bcx[] = {-1,-1,0,1};
+
+void red_move(){
+  int dir = change_direction(red_enemy, pacman);
+  red_enemy.rotate(dir);
+}
+
+void blue_move(){
+  int r = pacman.get_r();
+  int py = pacman.get_y() + bcy[r]*size, px = pacman.get_x() + bcx[r]*size;
+  position target(2*py - red_enemy.get_y(), 2*px - red_enemy.get_x());
+
+  int dir = change_direction(blue_enemy, target);
   blue_enemy.rotate(dir);
 }
 
@@ -176,89 +165,20 @@ void oran_move(){
   constexpr int max_dist = 5*size * 5*size; //最大距離の2乗
   int d = pacman.dist(oran_enemy);
   if(d < max_dist){
-    //中身はred_enemyの動きと同じ
-    if(!oran_enemy.ison_block()) return;
-    int y = oran_enemy.get_y();
-    int x = oran_enemy.get_x();
-    y /= size; x /= size;
-
-    int dir = -1, dist = inf;
-    for(int i = 0; i < 4; i++){
-      int ny = y + dy[i];
-      int nx = x + dx[i];
-
-      if(oran_enemy.isopposite(i)) continue;
-      if(get_field_val(ny, nx) == wall) continue;
-      if(isgate.count({ny,nx, i})) continue;
-      int d = pacman.dist(ny, nx);
-      if(dist > d){
-        dist = d;
-        dir = i;
-      }
-    }
-    if(dir == -1){
-      printf("red (y,x) = %d %d ", y,x);
-      printf("error  ");
-    }
+    int dir = change_direction(oran_enemy, pacman);
     oran_enemy.rotate(dir);
   }else{
     position target(height, 0);
-    if(!oran_enemy.ison_block()) return;
-    int y = oran_enemy.get_y();
-    int x = oran_enemy.get_x();
-    y /= size; x /= size;
-
-    int dir = -1, dist = inf;
-    for(int i = 0; i < 4; i++){
-      int ny = y + dy[i];
-      int nx = x + dx[i];
-
-      if(oran_enemy.isopposite(i)) continue;
-      if(get_field_val(ny, nx) == wall) continue;
-      if(isgate.count({ny,nx, i})) continue;
-      int d = target.dist(ny, nx);
-      if(dist > d){
-        dist = d;
-        dir = i;
-      }
-    }
-    if(dir == -1){
-      printf("red (y,x) = %d %d ", y,x);
-      printf("error  ");
-    }
+    int dir = change_direction(oran_enemy, target);
     oran_enemy.rotate(dir);
   }
 }
 
-int ty[] = {-2,0,2,0};
-int tx[] = {-2,-2,0,2};
 void pink_move(){
   int r = pacman.get_r();
-  position target(pacman.get_y()+ty[r]*size, pacman.get_x()+tx[r]*size);
+  position target(pacman.get_y() + pty[r]*size, pacman.get_x() + ptx[r]*size);
 
-  if(!pink_enemy.ison_block()) return;
-  int y = pink_enemy.get_y();
-  int x = pink_enemy.get_x();
-  y /= size; x /= size;
-
-  int dir = -1, dist = inf;
-  for(int i = 0; i < 4; i++){
-    int ny = y + dy[i];
-    int nx = x + dx[i];
-
-    if(pink_enemy.isopposite(i)) continue;
-    if(get_field_val(ny, nx) == wall) continue;
-    if(isgate.count({ny,nx, i})) continue;
-    int d = target.dist(ny, nx);
-    if(dist > d){
-      dist = d;
-      dir = i;
-    }
-  }
-  if(dir == -1){
-    printf("red (y,x) = %d %d ", y,x);
-    printf("error  ");
-  }
+  int dir = change_direction(pink_enemy, target);
   pink_enemy.rotate(dir);
 }
 //Pythonから毎フレーム呼び出される
