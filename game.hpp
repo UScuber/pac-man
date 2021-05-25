@@ -4,19 +4,19 @@
 #include <tuple>
 
 //ブロックの数（縦、横）
-constexpr int f_height = 22;
-constexpr int f_width = 19;
+constexpr int f_height = 31;
+constexpr int f_width = 28;
 
-constexpr int size = 32; //1blockの大きさ
+constexpr int size = 30; //1blockの大きさ
 //ピクセル
 constexpr int height = (f_height - 1) * size + 1;
 constexpr int width = (f_width - 1) * size + 1;
 
-constexpr int pac_pos_y = 16, pac_pos_x = 9;
-constexpr int red_pos_y = 10 - 1, red_pos_x = 10 - 1;
-constexpr int blue_pos_y = 10 - 2, blue_pos_x = 8 + 1;
-constexpr int oran_pos_y = 10 - 1, oran_pos_x = 9;
-constexpr int pink_pos_y = 9, pink_pos_x = 9;
+constexpr int pac_pos_y = 17, pac_pos_x = 13;
+constexpr int red_pos_y = 11, red_pos_x = 13;
+constexpr int blue_pos_y = 11, blue_pos_x = 13;
+constexpr int oran_pos_y = 11, oran_pos_x = 13;
+constexpr int pink_pos_y = 11, pink_pos_x = 13;
 
 constexpr int inf = 1e9;
 enum{
@@ -28,33 +28,44 @@ int dy[] = {-1,0,1,0};
 int dx[] = {0,-1,0,1};
 //フィールドの初期状態
 int field[f_height][f_width] = {
-  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
-  {wall,none,none,none,none,none,none,none,none,wall,none,none,none,none,none,none,none,none,wall},
-  {wall,none,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,none,wall},
-  {wall,none,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,none,wall},
-  {wall,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,wall},
-  {wall,none,wall,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,wall,none,wall},
-  {wall,none,none,none,none,wall,none,none,none,wall,none,none,none,wall,none,none,none,none,wall},
-  {wall,wall,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,wall,wall},
-  {wall,wall,wall,wall,none,wall,none,none,none,none,none,none,none,wall,none,wall,wall,wall,wall},
-  {wall,wall,wall,wall,none,wall,none,wall,wall,none,wall,wall,none,wall,none,wall,wall,wall,wall},
-  {none,none,none,none,none,none,none,wall,none,none,none,wall,none,none,none,none,none,none,none},
-  {wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall},
-  {wall,wall,wall,wall,none,wall,none,none,none,none,none,none,none,wall,none,wall,wall,wall,wall},
-  {wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall},
-  {wall,none,none,none,none,none,none,none,none,wall,none,none,none,none,none,none,none,none,wall},
-  {wall,none,wall,wall,none,wall,wall,wall,none,wall,none,wall,wall,wall,none,wall,wall,none,wall},
-  {wall,none,none,wall,none,none,none,none,none,none,none,none,none,none,none,wall,none,none,wall},
-  {wall,wall,none,wall,none,wall,none,wall,wall,wall,wall,wall,none,wall,none,wall,none,wall,wall},
-  {wall,none,none,none,none,wall,none,none,none,wall,none,none,none,wall,none,none,none,none,wall},
-  {wall,none,wall,wall,wall,wall,wall,wall,none,wall,none,wall,wall,wall,wall,wall,wall,none,wall},
-  {wall,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,none,wall},
-  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
+  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
+  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1},
+  {1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1},
+  {1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1},
+  {1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,1,0,0,0,0,0,0,1,0,1,1,0,1,1,1,1,1,1},
+  {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
+  {1,1,1,1,1,1,0,1,1,0,1,0,0,0,0,0,0,1,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
+  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
+  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
+  {1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1},
+  {1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1},
+  {1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1},
+  {1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1},
+  {1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1},
+  {1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1},
+  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
 //enemyが入れないところ{y, x, r}
 std::set<std::tuple<int,int,int>> isgate{
-  {9,9, 2}, {7,8, 0}, {7,10, 0}, {15,8, 0}, {15,10, 0},
+  {12,13,2},{12,14,2}, //敵の出入り口
+  {10,12,0},{10,15,0}, //上
+  {22,12,0},{22,15,0}, //下
 };
 
 //fieldの値を取得
@@ -107,7 +118,7 @@ struct position {
   }
   private:
   int y,x,rot;
-  int spd = 4;
+  int spd = 5;
 };
 position pacman(pac_pos_y*size, pac_pos_x*size, 3); //初期状態は右を向いている
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);

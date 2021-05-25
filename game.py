@@ -10,7 +10,7 @@ flame = 15 #ms
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
-size = 28 #画像1枚の大きさ
+size = 17 #フィールド1blockの大きさ
 objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
 #all of images
@@ -32,13 +32,14 @@ def release_key(event):
       ispress_key[i] = False
 
 
+
 #画像の位置や向きなどの更新
 def update_images():
   global canvas
   for i in range(len(objects)):
     x, y, r = cpp.get_xyr(i)
     canvas.itemconfig(objects[i], image= images[i][r][flip])
-    canvas.moveto(objects[i],  (x / cpp.sizec + 0.5) * size,  (y / cpp.sizec + 0.5) * size)
+    canvas.moveto(objects[i], x / cpp.sizec * size + 8, y / cpp.sizec * size + 12)
 
 
 #盤面の更新
@@ -73,18 +74,12 @@ def main():
   root = tk.Tk()
   #root.geometry("300x300")
   root.title("Pac-Man")
-  canvas = tk.Canvas(root, width=550, height=630, bg="black")
+  canvas = tk.Canvas(root, width=500, height=560, bg="black")
 
   #boardに画像を取り込む
-  board = [[None for _ in range(cpp.w)] for _ in range(cpp.h)]
-  #盤面の描画
-  for i in range(cpp.h):
-    for j in range(cpp.w):
-      img_name = "images/block/none.png"
-      if cpp.get_field(i, j) == 1:
-        img_name = "images/block/wall.png"
-      board[i][j] = tk.PhotoImage(file= img_name)
-      canvas.create_image((j+1)*size, (i+1)*size, image= board[i][j])
+  img_name = "images/board.png"
+  board = tk.PhotoImage(file= img_name)
+  canvas.create_image(250, 280, image= board)
 
 
   read_all_images()
