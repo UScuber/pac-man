@@ -8,17 +8,18 @@ constexpr int f_height = 31;
 constexpr int f_width = 28;
 
 constexpr int size = 30; //1blockの大きさ
+constexpr int init_spd = 5; //初期状態の速さ
 //ピクセル
 constexpr int height = (f_height - 1) * size + 1;
 constexpr int width = (f_width - 1) * size + 1;
 
-constexpr int pac_pos_y = 17, pac_pos_x = 13;
+constexpr int pac_pos_y = 23, pac_pos_x = 13;
 constexpr int red_pos_y = 11, red_pos_x = 13;
 constexpr int blue_pos_y = 11, blue_pos_x = 13;
 constexpr int oran_pos_y = 11, oran_pos_x = 13;
 constexpr int pink_pos_y = 11, pink_pos_x = 13;
 
-constexpr int inf = 1e9;
+constexpr int inf = 1000000000;
 enum{
   none, wall, //黒、壁
   pac, //Pac-Man
@@ -118,7 +119,7 @@ struct position {
   }
   private:
   int y,x,rot;
-  int spd = 5;
+  int spd = init_spd;
 };
 position pacman(pac_pos_y*size, pac_pos_x*size, 3); //初期状態は右を向いている
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
@@ -152,11 +153,11 @@ int change_direction(const position &obj, const position &target){
 }
 
 //pink target
-int pty[] = {-2,0,2,0};
-int ptx[] = {-2,-2,0,2};
+int pty[] = {-4,0,4,0};
+int ptx[] = {-4,-4,0,4};
 //blue center
-int bcy[] = {-1,0,1,0};
-int bcx[] = {-1,-1,0,1};
+int bcy[] = {-2,0,2,0};
+int bcx[] = {-2,-2,0,2};
 
 void red_move(){
   int dir = change_direction(red_enemy, pacman);
@@ -173,14 +174,15 @@ void blue_move(){
 }
 
 void oran_move(){
-  constexpr int max_dist = 5*size * 5*size; //最大距離の2乗
+  constexpr int max_dist = 8*size * 8*size; //最大距離の2乗
   int d = pacman.dist(oran_enemy);
+  //円の中に入った場合
   if(d < max_dist){
-    int dir = change_direction(oran_enemy, pacman);
-    oran_enemy.rotate(dir);
-  }else{
     position target(height, 0);
     int dir = change_direction(oran_enemy, target);
+    oran_enemy.rotate(dir);
+  }else{
+    int dir = change_direction(oran_enemy, pacman);
     oran_enemy.rotate(dir);
   }
 }
