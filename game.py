@@ -46,8 +46,9 @@ def update_images():
 def update():
   global canvas, flip
   cnt = 0
+  start = time.time()
   while True:
-    cpp.update_pos(flame/1000 * cnt)
+    cpp.update_pos(time.time() - start)
     if cnt % flip_freq == 0:  flip ^= 1
     update_images()
 

@@ -41,8 +41,17 @@ const int ptx[] = {-4,-4,0,4};
 const int bcy[] = {-2,0,2,0};
 const int bcx[] = {-2,-2,0,2};
 
-const int time_table = {
-
+int cur_table_pos = 0;
+const int time_table[] = { //chase,scatter modeを変える時間[s]
+  0, //changed to scatter_mode
+  7, //when 7[s], changes to chase_mode
+  20 +7, //when 20+7[s], changes to scatter_mode
+  7 +20+7, //chase
+  20 +7+20+7, //scatter
+  5 +20+7+20+7, //chase
+  20 +5+20+7+20+7, //scatter
+  5 +20+5+20+7+20+7, //chase
+  inf //won't change to scatter
 };
 
 //フィールドの初期状態
@@ -106,7 +115,8 @@ struct position {
   int get_r() const{ return rot; }
   int get_spd() const{ return spd; }
   //方向をrにセット
-  void rotate(int r){ rot = r; }
+  void rotate(const int &r){ rot = r; }
+  void reverse(){ rot = (rot+2) % 4; }
   bool move(){
     if(y % size || x % size){
       y += dy[rot] * spd;
@@ -131,14 +141,14 @@ struct position {
     int ty = round(y), tx = round(x);
     return (sy-ty)*(sy-ty) + (sx-tx)*(sx-tx);
   }
-  bool isopposite(int r) const{ return (rot + 2) % 4 == r; }
+  bool isopposite(const int &r) const{ return (rot + 2) % 4 == r; }
   bool ison_block() const{ return !(y % size || x % size); }
   private:
   int y,x,rot;
   int spd = init_spd;
   int state = 0;
 };
-position pacman(pac_pos_y*size, pac_pos_x*size, 3);
+position pacman(pac_pos_y*size, pac_pos_x*size, 1);
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
 position blue_enemy(blue_pos_y*size, blue_pos_x*size, 0);
 position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
@@ -169,6 +179,13 @@ int change_direction(const position &obj, const position &target){
   return dir;
 }
 
+//モード切替時に敵の進行方向を逆にする
+void reverse_enemies(){
+  red_enemy.reverse();
+  blue_enemy.reverse();
+  oran_enemy.reverse();
+  pink_enemy.reverse();
+}
 
 void red_move(){
   position target(-4*size, (f_width-3)*size); //scatter
@@ -216,6 +233,14 @@ void pink_move(){
 }
 //Pythonから毎フレーム呼び出される
 void update(double time){
+  //時間になったらモードの変更をする
+  if(time >= time_table[cur_table_pos]){
+    chase_mode ^= true;
+    if(chase_mode) printf("changed to chase mode\n");
+    else printf("changed to scatter mode\n");
+    reverse_enemies();
+    cur_table_pos++;
+  }
 
   red_move();
   blue_move();
