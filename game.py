@@ -7,7 +7,7 @@ import gamelib as cpp
 
 
 flame = 18 #ms 処理の更新頻度
-img_flame = 15 #ms 画像の切り替えの頻度
+img_flame = 9 #ms 画像の切り替えの頻度
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
@@ -43,7 +43,7 @@ def update_images():
       canvas.itemconfig(objects[i], image= images[i][r][flip])
       canvas.moveto(objects[i], x / cpp.sizec * size + 8, y / cpp.sizec * size + 12)
     
-    time.sleep(flame / 1200)
+    time.sleep(img_flame / 1000)
 
 
 #盤面の更新
