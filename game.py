@@ -6,7 +6,8 @@ import sys
 import gamelib as cpp
 
 
-flame = 15 #ms
+flame = 18 #ms 処理の更新頻度
+img_flame = 15 #ms 画像の切り替えの頻度
 flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
@@ -36,10 +37,13 @@ def release_key(event):
 #画像の位置や向きなどの更新
 def update_images():
   global canvas
-  for i in range(len(objects)):
-    x, y, r = cpp.get_xyr(i)
-    canvas.itemconfig(objects[i], image= images[i][r][flip])
-    canvas.moveto(objects[i], x / cpp.sizec * size + 8, y / cpp.sizec * size + 12)
+  while True:
+    for i in range(len(objects)):
+      x, y, r = cpp.get_xyr(i)
+      canvas.itemconfig(objects[i], image= images[i][r][flip])
+      canvas.moveto(objects[i], x / cpp.sizec * size + 8, y / cpp.sizec * size + 12)
+    
+    time.sleep(flame / 1200)
 
 
 #盤面の更新
@@ -47,10 +51,12 @@ def update():
   global canvas, flip
   cnt = 0
   start = time.time()
+  thread1 = threading.Thread(target= update_images)
+  thread1.setDaemon(True)
+  thread1.start()
   while True:
     cpp.update_pos(time.time() - start)
     if cnt % flip_freq == 0:  flip ^= 1
-    update_images()
 
     for i in range(len(ispress_key)):
       if ispress_key[i] == True:
