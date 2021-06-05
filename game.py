@@ -12,6 +12,7 @@ flip_freq = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 size = 17 #フィールド1blockの大きさ
+adjust_x, adjust_y = 8, 12
 objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
 #all of images
@@ -41,10 +42,14 @@ def update_images():
     for i in range(len(objects)):
       x, y, r = cpp.get_xyr(i)
       canvas.itemconfig(objects[i], image= images[i][r][flip])
-      canvas.moveto(objects[i], x / cpp.sizec * size + 8, y / cpp.sizec * size + 12)
+      canvas.moveto(objects[i], x / cpp.sizec * size + adjust_x, y / cpp.sizec * size + adjust_y)
     
     time.sleep(img_flame / 1000)
 
+#coinの消去
+def delete_coin(t):
+  if t != -1:
+    canvas.delete("coin" + str(t))
 
 #盤面の更新
 def update():
@@ -54,8 +59,10 @@ def update():
   thread1 = threading.Thread(target= update_images)
   thread1.setDaemon(True)
   thread1.start()
+
   while True:
-    cpp.update_pos(time.time() - start)
+    res = cpp.update_pos(time.time() - start)
+    delete_coin(res)
     if cnt % flip_freq == 0:  flip ^= 1
 
     for i in range(len(ispress_key)):
@@ -65,7 +72,7 @@ def update():
     sys.stdout.flush()
     time.sleep(flame / 1000)
     cnt += 1
-  
+
 
 def read_all_images():
   for i in range(len(objects)):
@@ -91,12 +98,27 @@ def main():
 
   read_all_images()
 
+  #coinを描画
+  coins = [] #一時保存用
+  for i in range(cpp.h):
+    for j in range(cpp.w):
+      t = cpp.get_field(i, j)
+      file_name = "images/items/"
+
+      """ C++の定数coin,COINの値に注意 """
+      if t == 7: #coin
+        file_name += "small.png"
+      elif t == 8: #COIN
+        file_name += "big.png"
+      else: continue
+      coins.append(tk.PhotoImage(file= file_name))
+      tag = "coin" + str(i*cpp.w + j)
+      canvas.create_image((j+1)*size + 5, (i+1)*size + 9, image= coins[-1], tag= tag)
+
   #pacman,enemiesを描画
   for i in range(len(objects)):
     x, y, r = cpp.get_xyr(i)
-    canvas.create_image((x / cpp.sizec + 0.5) * size, (y / cpp.sizec + 0.5) * size,
-                        image= images[i][r][flip], tag= objects[i])
-
+    canvas.create_image(0,0, image= images[i][r][flip], tag= objects[i])
 
 
   root.bind("<KeyPress>", press_key)

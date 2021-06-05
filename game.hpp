@@ -18,17 +18,21 @@ constexpr int red_pos_y = 11, red_pos_x = 13;
 constexpr int blue_pos_y = 11, blue_pos_x = 13;
 constexpr int oran_pos_y = 11, oran_pos_x = 13;
 constexpr int pink_pos_y = 11, pink_pos_x = 13;
+//食べられた時に戻る場所
+constexpr int nest_pos_y = 11, nest_pos_x = 13;
 
 constexpr int inf = 1000000000;
 enum{
   none, wall, //黒、壁
   pac, //Pac-Man
-  red, blue, orange, pink //enemies
+  red, blue, orange, pink, //enemies
+  coin, COIN //道に配置されている丸いやつ
 };
 //敵の状態
 enum{
-  eaten = 1<< 0,
-  frightened = 1<< 1,
+  normal,
+  eaten,
+  frightened
 };
 bool chase_mode = true;
 
@@ -40,6 +44,7 @@ const int ptx[] = {-4,-4,0,4};
 //blue center
 const int bcy[] = {-2,0,2,0};
 const int bcx[] = {-2,-2,0,2};
+
 
 int cur_table_pos = 0;
 const int time_table[] = { //chase,scatter modeを変える時間[s]
@@ -56,37 +61,37 @@ const int time_table[] = { //chase,scatter modeを変える時間[s]
 
 //フィールドの初期状態
 int field[f_height][f_width] = {
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
-  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
-  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1},
-  {1,0,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,0,1},
-  {1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1},
-  {1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,1,1,1,0,0,1,1,1,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,1,0,0,0,0,0,0,1,0,1,1,0,1,1,1,1,1,1},
-  {0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0},
-  {1,1,1,1,1,1,0,1,1,0,1,0,0,0,0,0,0,1,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
-  {1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
-  {1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1,1,1,0,1},
-  {1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,1},
-  {1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1},
-  {1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1},
-  {1,0,0,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,1,1,0,0,0,0,0,0,1},
-  {1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1},
-  {1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1},
-  {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
+  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
+  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,COIN,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,COIN,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {none,none,none,none,none,none,coin,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,coin,none,none,none,none,none,none},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
+  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
+  {wall,COIN,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,COIN,wall},
+  {wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall},
+  {wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall},
+  {wall,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,wall},
+  {wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall},
+  {wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall},
+  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
+  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
 };
 
 //enemyが入れないところ{y, x, r}
@@ -101,7 +106,10 @@ int get_field_val(int y, int x){
   if(y < 0 || y >= f_height || x < 0 || x >= f_width) return -1;
   return field[y][x];
 }
-
+void set_field_val(int y, int x, int t){
+  if(y < 0 || y >= f_height || x < 0 || x >= f_width);
+  else field[y][x] = t;
+}
 int round(const int &a){
   return (a+size/2)/size;
 }
@@ -118,7 +126,7 @@ struct position {
   void rotate(const int &r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
   bool move(){
-    if(y % size || x % size){
+    if(!ison_block()){
       y += dy[rot] * spd;
       x += dx[rot] * spd;
       return true;
@@ -232,7 +240,7 @@ void pink_move(){
   pink_enemy.rotate(dir);
 }
 //Pythonから毎フレーム呼び出される
-void update(double time){
+int update(double time){
   //時間になったらモードの変更をする
   if(time >= time_table[cur_table_pos]){
     chase_mode ^= true;
@@ -252,6 +260,15 @@ void update(double time){
   blue_enemy.move();
   oran_enemy.move();
   pink_enemy.move();
+
+  int y = round(pacman.get_y());
+  int x = round(pacman.get_x());
+  //coinを取った時の処理
+  if(get_field_val(y, x) == coin || get_field_val(y, x) == COIN){
+    set_field_val(y, x, none);
+    return y*f_width + x;
+  }
+  return -1;
 }
 
 
@@ -296,7 +313,7 @@ namespace python {
   void turn(int r){
     int y = pacman.get_y();
     int x = pacman.get_x();
-    if(y % size || x % size) return;
+    if(!pacman.ison_block()) return;
 
     y = round(y); x = round(x);
     y += dy[r]; x += dx[r];

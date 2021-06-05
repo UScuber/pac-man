@@ -1220,7 +1220,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
  *   return get_field_val(y, x)
  * 
  * def update_pos(double time):             # <<<<<<<<<<<<<<
- *   update(time)
+ *   return update(time)
  * 
  */
 
@@ -1254,34 +1254,47 @@ static PyObject *__pyx_pw_7gamelib_3update_pos(PyObject *__pyx_self, PyObject *_
 static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_time) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("update_pos", 0);
 
   /* "main.pyx":27
  * 
  * def update_pos(double time):
- *   update(time)             # <<<<<<<<<<<<<<
+ *   return update(time)             # <<<<<<<<<<<<<<
  * 
  * def get_xyr(i):
  */
-  update(__pyx_v_time);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(update(__pyx_v_time)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 27, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
 
   /* "main.pyx":26
  *   return get_field_val(y, x)
  * 
  * def update_pos(double time):             # <<<<<<<<<<<<<<
- *   update(time)
+ *   return update(time)
  * 
  */
 
   /* function exit code */
-  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("gamelib.update_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
 /* "main.pyx":29
- *   update(time)
+ *   return update(time)
  * 
  * def get_xyr(i):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i)
@@ -1348,7 +1361,7 @@ static PyObject *__pyx_pf_7gamelib_4get_xyr(CYTHON_UNUSED PyObject *__pyx_self, 
   goto __pyx_L0;
 
   /* "main.pyx":29
- *   update(time)
+ *   return update(time)
  * 
  * def get_xyr(i):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i)
@@ -1520,7 +1533,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *   return get_field_val(y, x)
  * 
  * def update_pos(double time):             # <<<<<<<<<<<<<<
- *   update(time)
+ *   return update(time)
  * 
  */
   __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_time, __pyx_n_s_time); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 26, __pyx_L1_error)
@@ -1529,7 +1542,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_update_pos, 26, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 26, __pyx_L1_error)
 
   /* "main.pyx":29
- *   update(time)
+ *   return update(time)
  * 
  * def get_xyr(i):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i)
@@ -1883,7 +1896,7 @@ if (!__Pyx_RefNanny) {
  *   return get_field_val(y, x)
  * 
  * def update_pos(double time):             # <<<<<<<<<<<<<<
- *   update(time)
+ *   return update(time)
  * 
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_3update_pos, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error)
@@ -1892,7 +1905,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":29
- *   update(time)
+ *   return update(time)
  * 
  * def get_xyr(i):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i)
