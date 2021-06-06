@@ -103,7 +103,8 @@ std::set<std::tuple<int,int,int>> isgate{
 
 //fieldの値を取得
 int get_field_val(int y, int x){
-  if(y < 0 || y >= f_height || x < 0 || x >= f_width) return -1;
+  if(y == 14 && (x < 0 || x >= f_width)) return none; //14はワープのところ
+  if(y < 0 || y >= f_height || x < 0 || x >= f_width) return wall;
   return field[y][x];
 }
 void set_field_val(int y, int x, int t){
@@ -125,6 +126,15 @@ struct position {
   //方向をrにセット
   void rotate(const int &r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
+  bool warp(){
+    //(y,x) = (14, -2), (14, f_width + 2)
+    if(y == 14*size){
+      if(x/size == -2) x = (f_width+2)*size;
+      else if(x/size == f_width+2) x = -2*size;
+      return true;
+    }
+    return false;
+  }
   bool move(){
     if(!ison_block()){
       y += dy[rot] * spd;
@@ -136,6 +146,7 @@ struct position {
     if(get_field_val(ty, tx) == wall) return false;
     y += dy[rot] * spd;
     x += dx[rot] * spd;
+    warp();
     return true;
   }
   //thisとaとの距離
