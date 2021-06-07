@@ -1387,7 +1387,6 @@ static PyObject *__pyx_pf_7gamelib_4get_xyr(CYTHON_UNUSED PyObject *__pyx_self, 
  * 
  * def rotate(r):             # <<<<<<<<<<<<<<
  *   turn(r)
- * 
  */
 
 /* Python wrapper */
@@ -1417,8 +1416,6 @@ static PyObject *__pyx_pf_7gamelib_6rotate(CYTHON_UNUSED PyObject *__pyx_self, P
  * 
  * def rotate(r):
  *   turn(r)             # <<<<<<<<<<<<<<
- * 
- * 
  */
   __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_r); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L1_error)
   python::turn(__pyx_t_1);
@@ -1428,7 +1425,6 @@ static PyObject *__pyx_pf_7gamelib_6rotate(CYTHON_UNUSED PyObject *__pyx_self, P
  * 
  * def rotate(r):             # <<<<<<<<<<<<<<
  *   turn(r)
- * 
  */
 
   /* function exit code */
@@ -1558,7 +1554,6 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * 
  * def rotate(r):             # <<<<<<<<<<<<<<
  *   turn(r)
- * 
  */
   __pyx_tuple__7 = PyTuple_Pack(1, __pyx_n_s_r); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__7);
@@ -1921,7 +1916,6 @@ if (!__Pyx_RefNanny) {
  * 
  * def rotate(r):             # <<<<<<<<<<<<<<
  *   turn(r)
- * 
  */
   __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_7rotate, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);

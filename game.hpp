@@ -125,6 +125,8 @@ struct position {
   int get_x() const{ return x; }
   int get_r() const{ return rot; }
   int get_spd() const{ return spd; }
+  int round_y() const{ return round(y); }
+  int round_x() const{ return round(x); }
   //方向をrにセット
   void rotate(const int &r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
@@ -164,13 +166,13 @@ struct position {
   }
   //thisとaとの距離
   int dist(const position &a){
-    int ay = round(a.get_y()), ax = round(a.get_x());
-    int ty = round(y), tx = round(x);
+    int ay = a.round_y(), ax = a.round_x();
+    int ty = round_y(), tx = round_x();
     return (ay-ty)*(ay-ty) + (ax-tx)*(ax-tx);
   }
   //thisと(y*size,x*size)との距離
   int dist(const int &sy, const int &sx) const{
-    int ty = round(y), tx = round(x);
+    int ty = round_y(), tx = round_x();
     return (sy-ty)*(sy-ty) + (sx-tx)*(sx-tx);
   }
   bool isopposite(const int &r) const{ return (rot + 2) % 4 == r; }
@@ -181,6 +183,7 @@ struct position {
     int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
     return 9*size <= d;
   }
+  void change_direction(const position &);
   private:
   int y,x,rot;
   int spd = normal_spd;
@@ -193,18 +196,16 @@ position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
 position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
 //方向転換、次に移動すべき回転場所を返す
-int change_direction(const position &obj, const position &target){
-  if(!obj.ison_block()) return obj.get_r();
-  int y = obj.get_y();
-  int x = obj.get_x();
-  y = round(y); x = round(x);
-
+void position::change_direction(const position &target){
+  if(!ison_block()) return;
+  int y = round_y(), x = round_x();
   int dir = -1, dist = inf;
+
   for(int i = 0; i < 4; i++){
     int ny = y + dy[i];
     int nx = x + dx[i];
 
-    if(obj.isopposite(i)) continue;
+    if(isopposite(i)) continue;
     if(get_field_val(ny, nx) == wall) continue;
     if(isgate.count({ny,nx, i})) continue;
     int d = target.dist(ny, nx);
@@ -213,15 +214,9 @@ int change_direction(const position &obj, const position &target){
       dir = i;
     }
   }
-  if(dir == -1) printf("error");
-  return dir;
-}
 
-void set_enemy_direction(){
-  red_move();
-  blue_move();
-  oran_move();
-  pink_move();
+  if(dir == -1) printf("error");
+  rotate(dir);
 }
 
 //1フレームだけ進める
@@ -254,22 +249,21 @@ void red_move(){
   if(chase_mode) //chase
     target = pacman;
 
-  int dir = change_direction(red_enemy, target);
-  red_enemy.rotate(dir);
+  red_enemy.change_direction(target);
 }
 
 void blue_move(){
   position target((f_height+1)*size, f_width*size); //scatter
   if(chase_mode){ //chase
     int r = pacman.get_r();
-    int py = pacman.get_y() + bcy[r]*size, px = pacman.get_x() + bcx[r]*size;
-    py = round(py); px = round(px);
-    int ty = 2*py - round(red_enemy.get_y());
-    int tx = 2*px - round(red_enemy.get_x());
+    int py = pacman.round_y() + bcy[r];
+    int px = pacman.round_x() + bcx[r];
+
+    int ty = 2*py - red_enemy.round_y();
+    int tx = 2*px - red_enemy.round_x();
     target = position(ty*size, tx*size);
   }
-  int dir = change_direction(blue_enemy, target);
-  blue_enemy.rotate(dir);
+  blue_enemy.change_direction(target);
 }
 
 void oran_move(){
@@ -280,19 +274,27 @@ void oran_move(){
   if(d >= max_dist && chase_mode) //chase
     target = pacman;
   
-  int dir = change_direction(oran_enemy, target);
-  oran_enemy.rotate(dir);
+  oran_enemy.change_direction(target);
 }
 
 void pink_move(){
   position target(-4*size, 2*size); //scatter
   if(chase_mode){ //chase
     int r = pacman.get_r();
-    target = position(pacman.get_y() + pty[r]*size, pacman.get_x() + ptx[r]*size);
+    int py = pacman.round_y() + pty[r];
+    int px = pacman.round_x() + ptx[r];
+    target = position(py*size, px*size);
   }
-  int dir = change_direction(pink_enemy, target);
-  pink_enemy.rotate(dir);
+  pink_enemy.change_direction(target);
 }
+
+void set_enemy_direction(){
+  red_move();
+  blue_move();
+  oran_move();
+  pink_move();
+}
+
 //Pythonから毎フレーム呼び出される
 int update(double time){
   //時間になったらモードの変更をする
@@ -308,8 +310,8 @@ int update(double time){
   move_all();
 
   int res = -1;
-  int y = round(pacman.get_y());
-  int x = round(pacman.get_x());
+  int y = pacman.round_y();
+  int x = pacman.round_x();
   //coinを取った時の処理
   if(get_field_val(y, x) == coin || get_field_val(y, x) == COIN){
     set_field_val(y, x, none);
@@ -361,11 +363,10 @@ namespace python {
 
   //パックマンの方向移動
   void turn(int r){
-    int y = pacman.get_y();
-    int x = pacman.get_x();
     if(!pacman.ison_block()) return;
 
-    y = round(y); x = round(x);
+    int y = pacman.round_y();
+    int x = pacman.round_x();
     y += dy[r]; x += dx[r];
     if(get_field_val(y, x) != wall){
       if(!(r == 2 && y == 12 && (x==13||x==14))) //敵の出入り口
