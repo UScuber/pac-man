@@ -31,34 +31,3 @@ def get_xyr(i):
 
 def rotate(r):
   turn(r)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

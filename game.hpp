@@ -7,8 +7,10 @@
 constexpr int f_height = 31;
 constexpr int f_width = 28;
 
-constexpr int size = 35; //1blockの大きさ
-constexpr int init_spd = 7; //初期状態の速さ
+constexpr int size = 120; //1blockの大きさ
+constexpr int normal_spd = 24; //初期状態の速さ1/5
+constexpr int slow_spd = 15; //低速時の速さ1/8
+constexpr int high_spd = 60; //高速時の速さ(巣に戻るとき)1/2
 //ピクセル
 constexpr int height = (f_height - 1) * size + 1;
 constexpr int width = (f_width - 1) * size + 1;
@@ -126,14 +128,25 @@ struct position {
   //方向をrにセット
   void rotate(const int &r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
+  void slow_down(){ spd = slow_spd; }
+  void set_normal(){ spd = normal_spd; }
+  void speed_up(){ spd = high_spd; }
   bool warp(){
     //(y,x) = (14, -2), (14, f_width + 2)
     if(y == 14*size){
-      if(x/size == -2) x = (f_width+2)*size;
-      else if(x/size == f_width+2) x = -2*size;
+      if(x/size == -2 && rot == 1) x = (f_width+2)*size;
+      else if(x/size == f_width+2 && rot == 3) x = -2*size;
       return true;
     }
     return false;
+  }
+  void change_speed(bool ok = true){
+    if(!ison_block()) return;
+    if(is_around_warp() && ok) slow_down();
+    else if(state == frightened) slow_down();
+    else if(state == eaten) speed_up();
+    else if(state == normal) set_normal();
+    else printf("error");
   }
   bool move(){
     if(!ison_block()){
@@ -144,9 +157,9 @@ struct position {
     int ty = round(y) + dy[rot];
     int tx = round(x) + dx[rot];
     if(get_field_val(ty, tx) == wall) return false;
+    warp();
     y += dy[rot] * spd;
     x += dx[rot] * spd;
-    warp();
     return true;
   }
   //thisとaとの距離
@@ -162,9 +175,15 @@ struct position {
   }
   bool isopposite(const int &r) const{ return (rot + 2) % 4 == r; }
   bool ison_block() const{ return !(y % size || x % size); }
+  //ワープする所の通路にいるかどうか
+  bool is_around_warp() const{
+    if(y != 14*size) return false;
+    int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
+    return 9*size <= d;
+  }
   private:
   int y,x,rot;
-  int spd = init_spd;
+  int spd = normal_spd;
   int state = 0;
 };
 position pacman(pac_pos_y*size, pac_pos_x*size, 1);
@@ -196,6 +215,30 @@ int change_direction(const position &obj, const position &target){
   }
   if(dir == -1) printf("error");
   return dir;
+}
+
+void set_enemy_direction(){
+  red_move();
+  blue_move();
+  oran_move();
+  pink_move();
+}
+
+//1フレームだけ進める
+void move_all(){
+  pacman.move();
+  red_enemy.move();
+  blue_enemy.move();
+  oran_enemy.move();
+  pink_enemy.move();
+}
+
+void set_speeds(){
+  pacman.change_speed(false); //例外
+  red_enemy.change_speed();
+  blue_enemy.change_speed();
+  oran_enemy.change_speed();
+  pink_enemy.change_speed();
 }
 
 //モード切替時に敵の進行方向を逆にする
@@ -261,25 +304,21 @@ int update(double time){
     cur_table_pos++;
   }
 
-  red_move();
-  blue_move();
-  oran_move();
-  pink_move();
-  
-  pacman.move();
-  red_enemy.move();
-  blue_enemy.move();
-  oran_enemy.move();
-  pink_enemy.move();
+  set_enemy_direction();
+  move_all();
 
+  int res = -1;
   int y = round(pacman.get_y());
   int x = round(pacman.get_x());
   //coinを取った時の処理
   if(get_field_val(y, x) == coin || get_field_val(y, x) == COIN){
     set_field_val(y, x, none);
-    return y*f_width + x;
+    res = y*f_width + x;
   }
-  return -1;
+
+  set_speeds();
+
+  return res;
 }
 
 
