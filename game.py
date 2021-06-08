@@ -16,7 +16,10 @@ adjust_x, adjust_y = 8, 12
 objects = ["pacman", "red", "blue", "orange", "pink"]
 direc_name = ["up", "left", "down", "right"]
 #all of images
-images = [[[[None],[None]] for _ in range(4)] for _ in range(len(objects))]
+#images[i]: normal, eaten, frightened
+states_num = 4 #const
+NORMAL, EATEN, FRIGHTENED, SCORE, = range(states_num)
+images = [[[[[None],[None]] for _ in range(len(direc_name))] for _ in range(len(objects))] for _ in range(states_num)]
 ispress_key = [False] * 4
 key_name = ["Right", "Down", "Left", "Up"] #逆向きにする
 
@@ -40,8 +43,14 @@ def update_images():
   global canvas
   while True:
     for i in range(len(objects)):
-      x, y, r = cpp.get_xyr(i)
-      canvas.itemconfig(objects[i], image= images[i][r][flip])
+      x, y, r, s = cpp.get_xyrs(i)
+      if cpp.get_isstop(i): 
+        if s == 1: #eaten スコアの表示
+          #i,flipはどの数字でもよい
+          if cpp.eat_num() == 0: print("error")
+          canvas.itemconfig(objects[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
+        continue
+      canvas.itemconfig(objects[i], image= images[s][i][r][flip])
       canvas.moveto(objects[i], x / cpp.sizec * size + adjust_x, y / cpp.sizec * size + adjust_y)
     
     time.sleep(img_flame / 1000)
@@ -75,11 +84,24 @@ def update():
 
 
 def read_all_images():
-  for i in range(len(objects)):
-    for j in range(4):
-      for k in range(2):
+  #coinはmain関数の中で画像を読み込む
+  for i in range(len(objects)): #object
+    for j in range(4): #direction
+      for k in range(2): #flip
+        #normal
         img_name = "images/"+objects[i]+"/"+direc_name[j]+str(k) +".png"
-        images[i][j][k] = tk.PhotoImage(file= img_name)
+        images[NORMAL][i][j][k] = tk.PhotoImage(file= img_name)
+        #eaten
+        img_name = "images/eaten/"+direc_name[j]+".png"
+        images[EATEN][i][j][k] = tk.PhotoImage(file= img_name)
+        #frightened
+        #とりあえず白く点滅するやつはなしにする
+        img_name = "images/frightened/"+"0"+str(k)+".png"
+        images[FRIGHTENED][i][j][k] = tk.PhotoImage(file= img_name)
+        #score
+        #食べられた時の表示する200,400,800,1600の画像
+        img_name = "images/eaten/"+str(1<<(j+1))+"00.png"
+        images[SCORE][i][j][k] = tk.PhotoImage(file= img_name)
 
 #ウィンドウの作成
 def main():
@@ -116,9 +138,9 @@ def main():
       canvas.create_image((j+1)*size + 5, (i+1)*size + 9, image= coins[-1], tag= tag)
 
   #pacman,enemiesを描画
-  for i in range(len(objects)):
-    x, y, r = cpp.get_xyr(i)
-    canvas.create_image(0,0, image= images[i][r][flip], tag= objects[i])
+  for i in [0,4,3,2,1]: #画像の奥行を設定
+    x, y, r, s = cpp.get_xyrs(i)
+    canvas.create_image(0,0, image= images[s][i][r][flip], tag= objects[i])
 
 
   root.bind("<KeyPress>", press_key)

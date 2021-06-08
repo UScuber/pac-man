@@ -11,6 +11,9 @@ cdef extern from "game.hpp" namespace "python":
   cdef int get_posy(int i)
   cdef int get_posx(int i)
   cdef int get_rot(int i)
+  cdef int get_state(int i)
+  cdef int get_is_stop(int i)
+  cdef int get_eat_num()
   cdef void turn(int r)
 
 #同じ名前だとコンパイルエラーが出るため
@@ -26,8 +29,18 @@ def get_field(int y, int x):
 def update_pos(double time):
   return update(time)
 
-def get_xyr(i):
-  return get_posx(i), get_posy(i), get_rot(i)
+def get_xyrs(i):
+  return get_posx(i), get_posy(i), get_rot(i), get_state(i)
+
+def get_isstop(i):
+  return get_is_stop(i)
 
 def rotate(r):
   turn(r)
+
+def eat_num():
+  return get_eat_num()
+
+
+
+

@@ -2,6 +2,7 @@
 #include <cassert>
 #include <set>
 #include <tuple>
+#include <time.h>
 
 //ブロックの数（縦、横）
 constexpr int f_height = 31;
@@ -22,6 +23,8 @@ constexpr int oran_pos_y = 11, oran_pos_x = 13;
 constexpr int pink_pos_y = 11, pink_pos_x = 13;
 //食べられた時に戻る場所
 constexpr int nest_pos_y = 11, nest_pos_x = 13;
+//frightened_modeの制限時間[s]
+constexpr double frightened_time = 10;
 
 constexpr int inf = 1000000000;
 enum{
@@ -37,6 +40,13 @@ enum{
   frightened
 };
 bool chase_mode = true;
+bool gameover = false;
+
+constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
+int wait_cnt = 0;
+int eat_num = 0; //食べた数
+double adjust_time = 0; //frightenedの時の時間を引く
+double frightened_start_time = 0;
 
 const int dy[] = {-1,0,1,0};
 const int dx[] = {0,-1,0,1};
@@ -127,12 +137,18 @@ struct position {
   int get_spd() const{ return spd; }
   int round_y() const{ return round(y); }
   int round_x() const{ return round(x); }
+  bool is_stop() const{ return Stop; }
+  int get_state() const{ return state; }
+  bool check_state(const int &i) const{ return state == i; }
   //方向をrにセット
   void rotate(const int &r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
   void slow_down(){ spd = slow_spd; }
   void set_normal(){ spd = normal_spd; }
   void speed_up(){ spd = high_spd; }
+  void start(){ Stop = false; }
+  void stop(){ Stop = true; }
+  void set_state(const int &t){ state = t; }
   bool warp(){
     //(y,x) = (14, -2), (14, f_width + 2)
     if(y == 14*size){
@@ -151,6 +167,7 @@ struct position {
     else printf("error");
   }
   bool move(){
+    if(is_stop()) return false;
     if(!ison_block()){
       y += dy[rot] * spd;
       x += dx[rot] * spd;
@@ -165,7 +182,7 @@ struct position {
     return true;
   }
   //thisとaとの距離
-  int dist(const position &a){
+  int dist(const position &a) const{
     int ay = a.round_y(), ax = a.round_x();
     int ty = round_y(), tx = round_x();
     return (ay-ty)*(ay-ty) + (ax-tx)*(ax-tx);
@@ -183,11 +200,14 @@ struct position {
     int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
     return 9*size <= d;
   }
+  //パックマンと触れたか判定する
+  bool is_touch();
   void change_direction(const position &);
   private:
   int y,x,rot;
   int spd = normal_spd;
-  int state = 0;
+  int state = normal;
+  bool Stop = false;
 };
 position pacman(pac_pos_y*size, pac_pos_x*size, 1);
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
@@ -199,7 +219,31 @@ position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 void position::change_direction(const position &target){
   if(!ison_block()) return;
   int y = round_y(), x = round_x();
+  //frightened_modeの時はランダム
+  if(check_state(frightened)){
+    while(true){
+      int ran = rand() % 4;
+      int ny = y + dy[ran];
+      int nx = x + dx[ran];
+
+      if(isopposite(ran)) continue;
+      if(get_field_val(ny, nx) == wall) continue;
+      if(isgate.count({ny,nx, ran})) continue;
+
+      rotate(ran);
+      return;
+    }
+    return;
+  }
   int dir = -1, dist = inf;
+
+  //eaten_mode 巣に戻った時
+  if(check_state(eaten) && y == nest_pos_y && x == nest_pos_x){
+    rotate(2);
+    set_state(normal);
+    printf("returned\n");
+    return;
+  }
 
   for(int i = 0; i < 4; i++){
     int ny = y + dy[i];
@@ -219,6 +263,30 @@ void position::change_direction(const position &target){
   rotate(dir);
 }
 
+void change_to_frightened(){
+  pacman.stop();
+  //戻る途中でなければ動作を一時的に止める
+  if(!red_enemy.check_state(eaten)) red_enemy.stop();
+  if(!blue_enemy.check_state(eaten)) blue_enemy.stop();
+  if(!oran_enemy.check_state(eaten)) oran_enemy.stop();
+  if(!pink_enemy.check_state(eaten)) pink_enemy.stop();
+  eat_num++;
+}
+
+bool position::is_touch(){
+  if(dist(pacman) || check_state(eaten)) return false;
+  if(check_state(normal)){
+    gameover = true;
+    printf("gameover!\n");
+  }else if(check_state(frightened)){
+    wait_cnt = eat_cnt;
+    //stop, eaten_modeにする
+    stop(); set_state(eaten);
+    change_to_frightened();
+  }
+  return true;
+}
+
 //1フレームだけ進める
 void move_all(){
   pacman.move();
@@ -226,6 +294,13 @@ void move_all(){
   blue_enemy.move();
   oran_enemy.move();
   pink_enemy.move();
+}
+
+void set_state_all_enemies(int st){
+  if(!red_enemy.check_state(eaten)) red_enemy.set_state(st);
+  if(!blue_enemy.check_state(eaten)) blue_enemy.set_state(st);
+  if(!oran_enemy.check_state(eaten)) oran_enemy.set_state(st);
+  if(!pink_enemy.check_state(eaten)) pink_enemy.set_state(st);
 }
 
 void set_speeds(){
@@ -246,7 +321,9 @@ void reverse_enemies(){
 
 void red_move(){
   position target(-4*size, (f_width-3)*size); //scatter
-  if(chase_mode) //chase
+  if(red_enemy.check_state(eaten)) //eaten
+    target = position(nest_pos_y*size, nest_pos_x*size);
+  else if(chase_mode) //chase
     target = pacman;
 
   red_enemy.change_direction(target);
@@ -254,7 +331,9 @@ void red_move(){
 
 void blue_move(){
   position target((f_height+1)*size, f_width*size); //scatter
-  if(chase_mode){ //chase
+  if(blue_enemy.check_state(eaten)) //eaten
+    target = position(nest_pos_y*size, nest_pos_x*size);
+  else if(chase_mode){ //chase
     int r = pacman.get_r();
     int py = pacman.round_y() + bcy[r];
     int px = pacman.round_x() + bcx[r];
@@ -271,7 +350,9 @@ void oran_move(){
   position target((f_height+1)*size, 0); //scatter
   int d = pacman.dist(oran_enemy);
 
-  if(d >= max_dist && chase_mode) //chase
+  if(oran_enemy.check_state(eaten)) //eaten
+    target = position(nest_pos_y*size, nest_pos_x*size);
+  else if(d >= max_dist && chase_mode) //chase
     target = pacman;
   
   oran_enemy.change_direction(target);
@@ -279,7 +360,9 @@ void oran_move(){
 
 void pink_move(){
   position target(-4*size, 2*size); //scatter
-  if(chase_mode){ //chase
+  if(pink_enemy.check_state(eaten)) //eaten
+    target = position(nest_pos_y*size, nest_pos_x*size);
+  else if(chase_mode){ //chase
     int r = pacman.get_r();
     int py = pacman.round_y() + pty[r];
     int px = pacman.round_x() + ptx[r];
@@ -297,15 +380,24 @@ void set_enemy_direction(){
 
 //Pythonから毎フレーム呼び出される
 int update(double time){
+  if(frightened_start_time != 0){
+    //frightened_modeが終わったときor全部食べた時
+    if(time - adjust_time - frightened_start_time >= frightened_time){
+      frightened_start_time = 0;
+      set_state_all_enemies(normal);
+      adjust_time += frightened_time;
+      eat_num = 0;
+      printf("return to normal mode\n");
+    }
+  }
   //時間になったらモードの変更をする
-  if(time >= time_table[cur_table_pos]){
-    chase_mode ^= true;
+  else if(time - adjust_time >= time_table[cur_table_pos]){
+    chase_mode = true;
     if(chase_mode) printf("changed to chase mode\n");
     else printf("changed to scatter mode\n");
     reverse_enemies();
     cur_table_pos++;
   }
-
   set_enemy_direction();
   move_all();
 
@@ -313,9 +405,35 @@ int update(double time){
   int y = pacman.round_y();
   int x = pacman.round_x();
   //coinを取った時の処理
-  if(get_field_val(y, x) == coin || get_field_val(y, x) == COIN){
+  const int v = get_field_val(y, x);
+  if(v == coin || v == COIN){
     set_field_val(y, x, none);
     res = y*f_width + x;
+    if(v == COIN){ //change to frightened mode
+      set_state_all_enemies(frightened);
+      frightened_start_time = time - adjust_time;
+      printf("frightened mode\n");
+    }
+  }
+
+  if(wait_cnt) wait_cnt--;
+
+  if(!wait_cnt){
+    pacman.start();
+    red_enemy.start();
+    blue_enemy.start();
+    oran_enemy.start();
+    pink_enemy.start();
+    
+    if(frightened_start_time != 0 && eat_num == 4){
+      //adjust_timeを調節してfrightened_modeを終了させる
+      adjust_time = time - frightened_start_time - frightened_time;
+    }
+
+    if(red_enemy.is_touch()) return res;
+    if(blue_enemy.is_touch()) return res;
+    if(oran_enemy.is_touch()) return res;
+    if(pink_enemy.is_touch()) return res;
   }
 
   set_speeds();
@@ -328,7 +446,6 @@ namespace python {
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
   int get_posy(int i){
-    assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_y();
       case 1: return red_enemy.get_y();
@@ -339,7 +456,6 @@ namespace python {
     }
   }
   int get_posx(int i){
-    assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_x();
       case 1: return red_enemy.get_x();
@@ -350,7 +466,6 @@ namespace python {
     }
   }
   int get_rot(int i){
-    assert(0 <= i && i < 5);
     switch(i){
       case 0: return pacman.get_r();
       case 1: return red_enemy.get_r();
@@ -360,7 +475,29 @@ namespace python {
       default: assert(0); return -1;
     }
   }
-
+  int get_state(int i){
+    switch(i){
+      case 0: return pacman.get_state();
+      case 1: return red_enemy.get_state();
+      case 2: return blue_enemy.get_state();
+      case 3: return oran_enemy.get_state();
+      case 4: return pink_enemy.get_state();
+      default: assert(0); return -1;
+    }
+  }
+  int get_is_stop(int i){
+    switch(i){
+      case 0: return pacman.is_stop();
+      case 1: return red_enemy.is_stop();
+      case 2: return blue_enemy.is_stop();
+      case 3: return oran_enemy.is_stop();
+      case 4: return pink_enemy.is_stop();
+      default: assert(0); return -1;
+    }
+  }
+  int get_eat_num(){
+    return eat_num;
+  }
   //パックマンの方向移動
   void turn(int r){
     if(!pacman.ison_block()) return;
@@ -373,4 +510,5 @@ namespace python {
         pacman.rotate(r);
     }
   }
+
 };
