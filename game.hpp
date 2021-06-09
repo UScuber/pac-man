@@ -215,6 +215,7 @@ position blue_enemy(blue_pos_y*size, blue_pos_x*size, 0);
 position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
 position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
+position *enemies[] = { &red_enemy, &blue_enemy, &oran_enemy, &pink_enemy };
 //方向転換、次に移動すべき回転場所を返す
 void position::change_direction(const position &target){
   if(!ison_block()) return;
@@ -263,13 +264,12 @@ void position::change_direction(const position &target){
   rotate(dir);
 }
 
-void change_to_frightened(){
+void change_to_eaten(){
   pacman.stop();
   //戻る途中でなければ動作を一時的に止める
-  if(!red_enemy.check_state(eaten)) red_enemy.stop();
-  if(!blue_enemy.check_state(eaten)) blue_enemy.stop();
-  if(!oran_enemy.check_state(eaten)) oran_enemy.stop();
-  if(!pink_enemy.check_state(eaten)) pink_enemy.stop();
+  for(auto enem : enemies){
+    if(!enem->check_state(eaten)) enem->stop();
+  }
   eat_num++;
 }
 
@@ -282,7 +282,7 @@ bool position::is_touch(){
     wait_cnt = eat_cnt;
     //stop, eaten_modeにする
     stop(); set_state(eaten);
-    change_to_frightened();
+    change_to_eaten();
   }
   return true;
 }
@@ -290,33 +290,28 @@ bool position::is_touch(){
 //1フレームだけ進める
 void move_all(){
   pacman.move();
-  red_enemy.move();
-  blue_enemy.move();
-  oran_enemy.move();
-  pink_enemy.move();
+  for(auto enem : enemies)
+    enem->move();
 }
 
-void set_state_all_enemies(int st){
-  if(!red_enemy.check_state(eaten)) red_enemy.set_state(st);
-  if(!blue_enemy.check_state(eaten)) blue_enemy.set_state(st);
-  if(!oran_enemy.check_state(eaten)) oran_enemy.set_state(st);
-  if(!pink_enemy.check_state(eaten)) pink_enemy.set_state(st);
+void set_state_enemies(int st){
+  for(auto enem : enemies){
+    if(!enem->check_state(eaten)) enem->set_state(st);
+  }
 }
 
 void set_speeds(){
   pacman.change_speed(false); //例外
-  red_enemy.change_speed();
-  blue_enemy.change_speed();
-  oran_enemy.change_speed();
-  pink_enemy.change_speed();
+  for(auto enem : enemies){
+    enem->change_speed();
+  }
 }
 
 //モード切替時に敵の進行方向を逆にする
 void reverse_enemies(){
-  red_enemy.reverse();
-  blue_enemy.reverse();
-  oran_enemy.reverse();
-  pink_enemy.reverse();
+  for(auto enem : enemies){
+    enem->reverse();
+  }
 }
 
 void red_move(){
@@ -371,7 +366,7 @@ void pink_move(){
   pink_enemy.change_direction(target);
 }
 
-void set_enemy_direction(){
+void set_enemies_direction(){
   red_move();
   blue_move();
   oran_move();
@@ -384,7 +379,7 @@ int update(double time){
     //frightened_modeが終わったときor全部食べた時
     if(time - adjust_time - frightened_start_time >= frightened_time){
       frightened_start_time = 0;
-      set_state_all_enemies(normal);
+      set_state_enemies(normal);
       adjust_time += frightened_time;
       eat_num = 0;
       printf("return to normal mode\n");
@@ -398,7 +393,7 @@ int update(double time){
     reverse_enemies();
     cur_table_pos++;
   }
-  set_enemy_direction();
+  set_enemies_direction();
   move_all();
 
   int res = -1;
@@ -410,9 +405,10 @@ int update(double time){
     set_field_val(y, x, none);
     res = y*f_width + x;
     if(v == COIN){ //change to frightened mode
-      set_state_all_enemies(frightened);
+      set_state_enemies(frightened);
       frightened_start_time = time - adjust_time;
-      printf("frightened mode\n");
+      reverse_enemies();
+      printf("changed to frightened mode\n");
     }
   }
 
@@ -420,20 +416,18 @@ int update(double time){
 
   if(!wait_cnt){
     pacman.start();
-    red_enemy.start();
-    blue_enemy.start();
-    oran_enemy.start();
-    pink_enemy.start();
+    for(auto enem : enemies){
+      enem->start();
+    }
     
     if(frightened_start_time != 0 && eat_num == 4){
       //adjust_timeを調節してfrightened_modeを終了させる
       adjust_time = time - frightened_start_time - frightened_time;
     }
 
-    if(red_enemy.is_touch()) return res;
-    if(blue_enemy.is_touch()) return res;
-    if(oran_enemy.is_touch()) return res;
-    if(pink_enemy.is_touch()) return res;
+    for(auto enem : enemies){
+      if(enem->is_touch()) return res;
+    }
   }
 
   set_speeds();
@@ -446,54 +440,24 @@ namespace python {
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
   int get_posy(int i){
-    switch(i){
-      case 0: return pacman.get_y();
-      case 1: return red_enemy.get_y();
-      case 2: return blue_enemy.get_y();
-      case 3: return oran_enemy.get_y();
-      case 4: return pink_enemy.get_y();
-      default: assert(0); return -1;
-    }
+    if(!i) return pacman.get_y();
+    return enemies[i - 1]->get_y();
   }
   int get_posx(int i){
-    switch(i){
-      case 0: return pacman.get_x();
-      case 1: return red_enemy.get_x();
-      case 2: return blue_enemy.get_x();
-      case 3: return oran_enemy.get_x();
-      case 4: return pink_enemy.get_x();
-      default: assert(0); return -1;
-    }
+    if(!i) return pacman.get_x();
+    return enemies[i - 1]->get_x();
   }
   int get_rot(int i){
-    switch(i){
-      case 0: return pacman.get_r();
-      case 1: return red_enemy.get_r();
-      case 2: return blue_enemy.get_r();
-      case 3: return oran_enemy.get_r();
-      case 4: return pink_enemy.get_r();
-      default: assert(0); return -1;
-    }
+    if(!i) return pacman.get_r();
+    return enemies[i - 1]->get_r();
   }
   int get_state(int i){
-    switch(i){
-      case 0: return pacman.get_state();
-      case 1: return red_enemy.get_state();
-      case 2: return blue_enemy.get_state();
-      case 3: return oran_enemy.get_state();
-      case 4: return pink_enemy.get_state();
-      default: assert(0); return -1;
-    }
+    if(!i) return pacman.get_state();
+    return enemies[i - 1]->get_state();
   }
   int get_is_stop(int i){
-    switch(i){
-      case 0: return pacman.is_stop();
-      case 1: return red_enemy.is_stop();
-      case 2: return blue_enemy.is_stop();
-      case 3: return oran_enemy.is_stop();
-      case 4: return pink_enemy.is_stop();
-      default: assert(0); return -1;
-    }
+    if(!i) return pacman.is_stop();
+    return enemies[i - 1]->is_stop();
   }
   int get_eat_num(){
     return eat_num;
