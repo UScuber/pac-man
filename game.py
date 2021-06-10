@@ -6,34 +6,34 @@ import sys
 import gamelib as cpp
 
 
-flame = 18 #ms 処理の更新頻度
-img_flame = 9 #ms 画像の切り替えの頻度
-flip_freq = 4 #何フレームごとに画像を切り替えるか
+FRAME = 18 #ms 処理の更新頻度
+IMG_FRAME = 9 #ms 画像の切り替えの頻度
+FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
-size = 17 #フィールド1blockの大きさ
-adjust_x, adjust_y = 8, 12
-objects = ["pacman", "red", "blue", "orange", "pink"]
-direc_name = ["up", "left", "down", "right"]
+SIZE = 17 #フィールド1blockの大きさ
+ADJ_X, ADJ_Y = 8, 12 #adjust_x,y
+OBJECTS = ["pacman", "red", "blue", "orange", "pink"]
+DIREC_NAME = ["up", "left", "down", "right"]
 #all of images
 #images[i]: normal, eaten, frightened
-states_num = 4 #const
-NORMAL, EATEN, FRIGHTENED, SCORE, = range(states_num)
-images = [[[[[None],[None]] for _ in range(len(direc_name))] for _ in range(len(objects))] for _ in range(states_num)]
+STATES_NUM = 4
+NORMAL, EATEN, FRIGHTENED, SCORE, = range(STATES_NUM)
+images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(OBJECTS))] for _ in range(STATES_NUM)]
 ispress_key = [False] * 4
-key_name = ["Right", "Down", "Left", "Up"] #逆向きにする
+KEY_NAME = ["Right", "Down", "Left", "Up"] #逆向きにする
 
 #キーボードからの入力
 def press_key(event):
   key_state = event.keysym
-  for i in range(len(key_name)):
-    if key_state == key_name[i]:
+  for i in range(len(KEY_NAME)):
+    if key_state == KEY_NAME[i]:
       ispress_key[i] = True
 
 def release_key(event):
   key_state = event.keysym
-  for i in range(len(key_name)):
-    if key_state == key_name[i]:
+  for i in range(len(KEY_NAME)):
+    if key_state == KEY_NAME[i]:
       ispress_key[i] = False
 
 
@@ -42,18 +42,18 @@ def release_key(event):
 def update_images():
   global canvas
   while True:
-    for i in range(len(objects)):
+    for i in range(len(OBJECTS)):
       x, y, r, s = cpp.get_xyrs(i)
-      if cpp.get_isstop(i): 
+      if cpp.get_isstop(i):
         if s == 1: #eaten スコアの表示
           #i,flipはどの数字でもよい
           if cpp.eat_num() == 0: print("error")
-          canvas.itemconfig(objects[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
+          canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
         continue
-      canvas.itemconfig(objects[i], image= images[s][i][r][flip])
-      canvas.moveto(objects[i], x / cpp.sizec * size + adjust_x, y / cpp.sizec * size + adjust_y)
+      canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
+      canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
     
-    time.sleep(img_flame / 1000)
+    time.sleep(IMG_FRAME / 1000)
 
 #coinの消去
 def delete_coin(t):
@@ -72,27 +72,27 @@ def update():
   while True:
     res = cpp.update_pos(time.time() - start)
     delete_coin(res)
-    if cnt % flip_freq == 0:  flip ^= 1
+    if cnt % FLIP_FREQ == 0:  flip ^= 1
 
     for i in range(len(ispress_key)):
       if ispress_key[i] == True:
         cpp.rotate(3 - i)
 
     sys.stdout.flush()
-    time.sleep(flame / 1000)
+    time.sleep(FRAME / 1000)
     cnt += 1
 
 
 def read_all_images():
   #coinはmain関数の中で画像を読み込む
-  for i in range(len(objects)): #object
+  for i in range(len(OBJECTS)): #object
     for j in range(4): #direction
       for k in range(2): #flip
         #normal
-        img_name = "images/"+objects[i]+"/"+direc_name[j]+str(k) +".png"
+        img_name = "images/"+OBJECTS[i]+"/"+DIREC_NAME[j]+str(k) +".png"
         images[NORMAL][i][j][k] = tk.PhotoImage(file= img_name)
         #eaten
-        img_name = "images/eaten/"+direc_name[j]+".png"
+        img_name = "images/eaten/"+DIREC_NAME[j]+".png"
         images[EATEN][i][j][k] = tk.PhotoImage(file= img_name)
         #frightened
         #とりあえず白く点滅するやつはなしにする
@@ -135,12 +135,12 @@ def main():
       else: continue
       coins.append(tk.PhotoImage(file= file_name))
       tag = "coin" + str(i*cpp.w + j)
-      canvas.create_image((j+1)*size + 5, (i+1)*size + 9, image= coins[-1], tag= tag)
+      canvas.create_image((j+1)*SIZE + 5, (i+1)*SIZE + 9, image= coins[-1], tag= tag)
 
   #pacman,enemiesを描画
   for i in [0,4,3,2,1]: #画像の奥行を設定
     x, y, r, s = cpp.get_xyrs(i)
-    canvas.create_image(0,0, image= images[s][i][r][flip], tag= objects[i])
+    canvas.create_image(0,0, image= images[s][i][r][flip], tag= OBJECTS[i])
 
 
   root.bind("<KeyPress>", press_key)

@@ -13,6 +13,7 @@ cdef extern from "game.hpp" namespace "python":
   cdef int get_rot(int i)
   cdef int get_state(int i)
   cdef int get_is_stop(int i)
+  cdef int get_is_limit(int i)
   cdef int get_eat_num()
   cdef void turn(int r)
 
@@ -41,11 +42,7 @@ def rotate(r):
 def eat_num():
   return get_eat_num()
 
-
-
-
-
-
-
+def is_limit(i):
+  return get_is_limit(i)
 
 

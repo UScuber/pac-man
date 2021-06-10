@@ -23,8 +23,12 @@ constexpr int oran_pos_y = 11, oran_pos_x = 13;
 constexpr int pink_pos_y = 11, pink_pos_x = 13;
 //食べられた時に戻る場所
 constexpr int nest_pos_y = 11, nest_pos_x = 13;
+
 //frightened_modeの制限時間[s]
 constexpr double frightened_time = 10;
+constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
+//frightened_modeが終了する何秒[s]前から点滅させるか
+constexpr double frightened_limit_time = 3;
 
 constexpr int inf = 1000000000;
 enum{
@@ -42,11 +46,11 @@ enum{
 bool chase_mode = true;
 bool gameover = false;
 
-constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 int wait_cnt = 0;
 int eat_num = 0; //食べた数
 double adjust_time = 0; //frightenedの時の時間を引く
 double frightened_start_time = 0;
+double current_time = 0;
 
 const int dy[] = {-1,0,1,0};
 const int dx[] = {0,-1,0,1};
@@ -375,6 +379,7 @@ void set_enemies_direction(){
 
 //Pythonから毎フレーム呼び出される
 int update(double time){
+  current_time = time;
   if(frightened_start_time != 0){
     //frightened_modeが終わったときor全部食べた時
     if(time - adjust_time - frightened_start_time >= frightened_time){
@@ -455,13 +460,22 @@ namespace python {
     if(!i) return pacman.get_state();
     return enemies[i - 1]->get_state();
   }
-  int get_is_stop(int i){
+  bool get_is_stop(int i){
     if(!i) return pacman.is_stop();
     return enemies[i - 1]->is_stop();
+  }
+  //frightened_modeが時間制限になりそうかどうか
+  bool get_is_limit(int i){
+    if(!i) return false;
+    if(frightened_time - (current_time - adjust_time - frightened_start_time) <= frightened_limit_time){
+      if(enemies[i - 1]->check_state(frightened)) return true;
+    }
+    return false;
   }
   int get_eat_num(){
     return eat_num;
   }
+  
   //パックマンの方向移動
   void turn(int r){
     if(!pacman.ison_block()) return;
