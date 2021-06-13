@@ -8,10 +8,10 @@
 constexpr int f_height = 31;
 constexpr int f_width = 28;
 
-constexpr int size = 120; //1blockの大きさ
-constexpr int normal_spd = 24; //初期状態の速さ1/5
-constexpr int slow_spd = 15; //低速時の速さ1/8
-constexpr int high_spd = 60; //高速時の速さ(巣に戻るとき)1/2
+constexpr int size = 6000; //1blockの大きさ
+constexpr int normal_spd = 880; //初期状態の速さ90%
+constexpr int slow_spd = 440; //低速時の速さ
+constexpr int high_spd = 2200; //高速時の速さ(巣に戻るとき)
 //ピクセル
 constexpr int height = (f_height - 1) * size + 1;
 constexpr int width = (f_width - 1) * size + 1;
@@ -30,12 +30,14 @@ constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 //frightened_modeが終了する何秒[s]前から点滅させるか
 constexpr double frightened_limit_time = 3;
 
+constexpr int dots_all_num = 246;
+
 constexpr int inf = 1000000000;
 enum{
   none, wall, //黒、壁
   pac, //Pac-Man
   red, blue, orange, pink, //enemies
-  coin, COIN //道に配置されている丸いやつ
+  dots, DOTS
 };
 //敵の状態
 enum{
@@ -51,6 +53,8 @@ int eat_num = 0; //食べた数
 double adjust_time = 0; //frightenedの時の時間を引く
 double frightened_start_time = 0;
 double current_time = 0;
+
+int dots_remain_num = dots_all_num;
 
 const int dy[] = {-1,0,1,0};
 const int dx[] = {0,-1,0,1};
@@ -78,35 +82,35 @@ const int time_table[] = { //chase,scatter modeを変える時間[s]
 //フィールドの初期状態
 int field[f_height][f_width] = {
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
-  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,COIN,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,COIN,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {none,none,none,none,none,none,coin,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,coin,none,none,none,none,none,none},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,coin,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,coin,wall,wall,wall,wall,wall,wall},
-  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,coin,wall,wall,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,coin,wall,wall,wall,wall,coin,wall},
-  {wall,COIN,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,COIN,wall},
-  {wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall},
-  {wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,coin,wall,wall,wall},
-  {wall,coin,coin,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,wall,wall,coin,coin,coin,coin,coin,coin,wall},
-  {wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall},
-  {wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall,wall,coin,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,coin,wall},
-  {wall,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,coin,wall},
+  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,DOTS,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,DOTS,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {none,none,none,none,none,none,dots,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,dots,none,none,none,none,none,none},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
+  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
+  {wall,DOTS,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,DOTS,wall},
+  {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
+  {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
+  {wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall},
+  {wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall},
+  {wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall},
+  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
 };
 
@@ -150,40 +154,48 @@ struct position {
   void slow_down(){ spd = slow_spd; }
   void set_normal(){ spd = normal_spd; }
   void speed_up(){ spd = high_spd; }
+  //最大速度のt%の速度に設定
+  void set_speed(int t){ spd = 11 * t; }
   void start(){ Stop = false; }
   void stop(){ Stop = true; }
   void set_state(const int &t){ state = t; }
-  bool warp(){
+  void warp(){
     //(y,x) = (14, -2), (14, f_width + 2)
     if(y == 14*size){
-      if(x/size == -2 && rot == 1) x = (f_width+2)*size;
-      else if(x/size == f_width+2 && rot == 3) x = -2*size;
-      return true;
+      if(x < -2*size) x = (f_width+2)*size - (-2*size - x);
+      else if(x > (f_width+2)*size) x = -2*size + (x - (f_width+2)*size);
     }
-    return false;
   }
   void change_speed(bool ok = true){
     if(!ison_block()) return;
-    if(is_around_warp() && ok) slow_down();
+    if(is_intunnel() && ok) slow_down();
     else if(state == frightened) slow_down();
     else if(state == eaten) speed_up();
     else if(state == normal) set_normal();
     else printf("error");
   }
-  bool move(){
-    if(is_stop()) return false;
-    if(!ison_block()){
+  //壁に当たった場合、残りの移動量を返す
+  int move(){
+    if(is_stop()) return 0;
+    int ry = round(y);
+    int rx = round(x);
+    int ty = (ry*size - y) * dy[rot];
+    int tx = (rx*size - x) * dx[rot];
+    
+    //現在の方向と同じだった場合
+    if(0 <= ty && ty < spd && 0 <= tx && tx < spd){
+      int res = ty + tx; //動く量
+      y += dy[rot] * res;
+      x += dx[rot] * res;
+      //if(get_field_val(ry+dy[rot], rx+dx[rot]) == wall) return 0;
+      return spd - res; //残りの量
+    }else{
+      warp();
       y += dy[rot] * spd;
       x += dx[rot] * spd;
-      return true;
+      return 0;
     }
-    int ty = round(y) + dy[rot];
-    int tx = round(x) + dx[rot];
-    if(get_field_val(ty, tx) == wall) return false;
-    warp();
-    y += dy[rot] * spd;
-    x += dx[rot] * spd;
-    return true;
+    return 0;
   }
   //thisとaとの距離
   int dist(const position &a) const{
@@ -199,14 +211,14 @@ struct position {
   bool isopposite(const int &r) const{ return (rot + 2) % 4 == r; }
   bool ison_block() const{ return !(y % size || x % size); }
   //ワープする所の通路にいるかどうか
-  bool is_around_warp() const{
+  bool is_intunnel() const{
     if(y != 14*size) return false;
     int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
     return 9*size <= d;
   }
   //パックマンと触れたか判定する
   bool is_touch();
-  void change_direction(const position &);
+  void change_direction(const position &, int);
   private:
   int y,x,rot;
   int spd = normal_spd;
@@ -221,51 +233,75 @@ position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
 
 position *enemies[] = { &red_enemy, &blue_enemy, &oran_enemy, &pink_enemy };
 //方向転換、次に移動すべき回転場所を返す
-void position::change_direction(const position &target){
+void position::change_direction(const position &target, int dir = -1){
+  int move_num = move(); //動ける量
+
   if(!ison_block()) return;
-  int y = round_y(), x = round_x();
-  //frightened_modeの時はランダム
-  if(check_state(frightened)){
-    while(true){
-      int ran = rand() % 4;
-      int ny = y + dy[ran];
-      int nx = x + dx[ran];
 
-      if(isopposite(ran)) continue;
-      if(get_field_val(ny, nx) == wall) continue;
-      if(isgate.count({ny,nx, ran})) continue;
+  int ry = round_y(), rx = round_x();
 
-      rotate(ran);
-      return;
+  //pac-manからの方向の入力を確かめる
+  if(dir != -1){
+    //入力なしの場合
+    if(dir >= 4) dir = rot;
+
+    int ny = ry + dy[dir];
+    int nx = rx + dx[dir];
+    if(get_field_val(ny, nx) == wall){
+      if(get_field_val(ry+dy[rot], rx+dx[rot]) != wall) dir = rot;
+      else return;
     }
-    return;
+    if(dir == 2 && ny == 12 && (nx==13||nx==14)) //敵の出入り口
+      return;
   }
-  int dir = -1, dist = inf;
+  //frightened_modeの時はランダム
+  else if(check_state(frightened)){
+    while(true){
+      dir = rand() % 4;
+      int ny = ry + dy[dir];
+      int nx = rx + dx[dir];
 
+      if(isopposite(dir)) continue;
+      if(get_field_val(ny, nx) == wall) continue;
+      if(isgate.count({ny,nx, dir})) continue;
+      break;
+    }
+  }
   //eaten_mode 巣に戻った時
-  if(check_state(eaten) && y == nest_pos_y && x == nest_pos_x){
+  else if(check_state(eaten) && ry == nest_pos_y && rx == nest_pos_x){
     rotate(2);
     set_state(normal);
     printf("returned\n");
     return;
   }
+  else{
+    int dist = inf;
+    for(int i = 0; i < 4; i++){
+      int ny = ry + dy[i];
+      int nx = rx + dx[i];
 
-  for(int i = 0; i < 4; i++){
-    int ny = y + dy[i];
-    int nx = x + dx[i];
-
-    if(isopposite(i)) continue;
-    if(get_field_val(ny, nx) == wall) continue;
-    if(isgate.count({ny,nx, i})) continue;
-    int d = target.dist(ny, nx);
-    if(dist > d){
-      dist = d;
-      dir = i;
+      if(isopposite(i)) continue;
+      if(get_field_val(ny, nx) == wall) continue;
+      if(isgate.count({ny,nx, i})) continue;
+      int d = target.dist(ny, nx);
+      if(dist > d){
+        dist = d;
+        dir = i;
+      }
     }
   }
 
-  if(dir == -1) printf("error");
+  if(dir == -1) printf("dir_error ");
+
+  //進行方向がwall
+  if(get_field_val(ry+dy[dir], rx+dx[dir]) == wall){
+    return;
+  }
   rotate(dir);
+
+  //残りの分を動かす
+  y += dy[rot] * move_num;
+  x += dx[rot] * move_num;
 }
 
 void change_to_eaten(){
@@ -275,6 +311,41 @@ void change_to_eaten(){
     if(!enem->check_state(eaten)) enem->stop();
   }
   eat_num++;
+}
+
+void change_all_speed(bool is_ate_dots){
+  //enemies
+  bool changed[] = {false};
+
+  if(dots_remain_num <= 10){ //elroy2 dots left
+    for(int i = 0; i <= 1; i++){
+      enemies[i]->set_speed(85);
+      changed[i] = true;
+    }
+  }else if(dots_remain_num <= 20){ //elroy1 dots left
+    for(int i = 0; i <= 1; i++){
+      enemies[i]->set_speed(80);
+      changed[i] = true;
+    }
+  }
+
+  for(int i = 0; i < 4; i++){
+    if(changed[i]) continue;
+    if(enemies[i]->check_state(eaten)) enemies[i]->set_speed(250); //check
+    else if(enemies[i]->is_intunnel()) enemies[i]->set_speed(40);
+    else if(enemies[i]->check_state(frightened)) enemies[i]->set_speed(50);
+    else if(enemies[i]->check_state(normal)) enemies[i]->set_speed(75);
+  }
+
+  //pacman
+  //frightened_modeの場合
+  if(frightened_start_time != 0){
+    if(is_ate_dots) pacman.set_speed(79);
+    else pacman.set_speed(90);
+  }else{
+    if(is_ate_dots) pacman.set_speed(71);
+    else pacman.set_speed(80);
+  }
 }
 
 bool position::is_touch(){
@@ -291,23 +362,9 @@ bool position::is_touch(){
   return true;
 }
 
-//1フレームだけ進める
-void move_all(){
-  pacman.move();
-  for(auto enem : enemies)
-    enem->move();
-}
-
 void set_state_enemies(int st){
   for(auto enem : enemies){
     if(!enem->check_state(eaten)) enem->set_state(st);
-  }
-}
-
-void set_speeds(){
-  pacman.change_speed(false); //例外
-  for(auto enem : enemies){
-    enem->change_speed();
   }
 }
 
@@ -370,51 +427,69 @@ void pink_move(){
   pink_enemy.change_direction(target);
 }
 
-void set_enemies_direction(){
+//scatter <=> chase
+void change_scmode(){
+  chase_mode ^= true;
+  if(chase_mode) printf("changed to chase mode\n");
+  else printf("changed to scatter mode\n");
+  reverse_enemies();
+  cur_table_pos++;
+}
+
+void start_frightened_mode(double time){
+  set_state_enemies(frightened);
+  frightened_start_time = time - adjust_time;
+  reverse_enemies();
+  printf("changed to frightened mode\n");
+}
+
+void end_frightened_mode(){
+  frightened_start_time = 0;
+  set_state_enemies(normal);
+  adjust_time += frightened_time;
+  eat_num = 0;
+  printf("return to normal mode\n");
+}
+//1フレームだけ進める
+void move_all(int r){
   red_move();
   blue_move();
   oran_move();
   pink_move();
+
+  pacman.change_direction(position(), r);
 }
 
+
 //Pythonから毎フレーム呼び出される
-int update(double time){
+//rはキーボードから受け付けた方向
+int update(double time, int r){
   current_time = time;
   if(frightened_start_time != 0){
     //frightened_modeが終わったときor全部食べた時
     if(time - adjust_time - frightened_start_time >= frightened_time){
-      frightened_start_time = 0;
-      set_state_enemies(normal);
-      adjust_time += frightened_time;
-      eat_num = 0;
-      printf("return to normal mode\n");
+      end_frightened_mode();
     }
   }
   //時間になったらモードの変更をする
   else if(time - adjust_time >= time_table[cur_table_pos]){
-    chase_mode = true;
-    if(chase_mode) printf("changed to chase mode\n");
-    else printf("changed to scatter mode\n");
-    reverse_enemies();
-    cur_table_pos++;
+    change_scmode();
   }
-  set_enemies_direction();
-  move_all();
 
+  move_all(r);
+
+  bool is_ate_dots = false;
   int res = -1;
   int y = pacman.round_y();
   int x = pacman.round_x();
-  //coinを取った時の処理
+  //dotsを取った時の処理
   const int v = get_field_val(y, x);
-  if(v == coin || v == COIN){
+  if(v == dots || v == DOTS){
     set_field_val(y, x, none);
     res = y*f_width + x;
-    if(v == COIN){ //change to frightened mode
-      set_state_enemies(frightened);
-      frightened_start_time = time - adjust_time;
-      reverse_enemies();
-      printf("changed to frightened mode\n");
-    }
+    dots_remain_num--;
+    is_ate_dots = true;
+    if(v == DOTS) start_frightened_mode(time);
   }
 
   if(wait_cnt) wait_cnt--;
@@ -434,12 +509,12 @@ int update(double time){
       if(enem->is_touch()) return res;
     }
   }
-
-  set_speeds();
+  change_all_speed(is_ate_dots);
 
   return res;
 }
 
+#include <Windows.h>
 
 namespace python {
   //pacman, red,blue,orange,pink = 0,1,2,3,4
@@ -476,17 +551,4 @@ namespace python {
     return eat_num;
   }
   
-  //パックマンの方向移動
-  void turn(int r){
-    if(!pacman.ison_block()) return;
-
-    int y = pacman.round_y();
-    int x = pacman.round_x();
-    y += dy[r]; x += dx[r];
-    if(get_field_val(y, x) != wall){
-      if(!(r == 2 && y == 12 && (x==13||x==14))) //敵の出入り口
-        pacman.rotate(r);
-    }
-  }
-
 };

@@ -3,10 +3,13 @@ import tkinter as tk
 import threading
 import time
 import sys
+import contextlib
+with contextlib.redirect_stdout(None):
+  import pygame
 import gamelib as cpp
 
 
-FRAME = 18 #ms 処理の更新頻度
+FRAME = 50 #ms 処理の更新頻度
 IMG_FRAME = 9 #ms 画像の切り替えの頻度
 FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
@@ -21,7 +24,7 @@ STATES_NUM = 4
 NORMAL, EATEN, FRIGHTENED, SCORE, = range(STATES_NUM)
 images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(OBJECTS))] for _ in range(STATES_NUM)]
 ispress_key = [False] * 4
-KEY_NAME = ["Right", "Down", "Left", "Up"] #逆向きにする
+KEY_NAME = ["Up", "Left", "Down", "Right"]
 
 #キーボードからの入力
 def press_key(event):
@@ -36,7 +39,11 @@ def release_key(event):
     if key_state == KEY_NAME[i]:
       ispress_key[i] = False
 
-
+def key_state():
+  for i in range(len(ispress_key)):
+    if ispress_key[i] == True:
+      return i
+  return len(ispress_key)
 
 #画像の位置や向きなどの更新
 def update_images():
@@ -68,18 +75,15 @@ def update():
   thread1 = threading.Thread(target= update_images)
   thread1.setDaemon(True)
   thread1.start()
-
+  clock = pygame.time.Clock()
   while True:
-    res = cpp.update_pos(time.time() - start)
+    clock.tick(FRAME)
+    st = key_state() #keyboard
+    res = cpp.update_pos(time.time() - start, st)
     delete_coin(res)
     if cnt % FLIP_FREQ == 0:  flip ^= 1
 
-    for i in range(len(ispress_key)):
-      if ispress_key[i] == True:
-        cpp.rotate(3 - i)
-
     sys.stdout.flush()
-    time.sleep(FRAME / 1000)
     cnt += 1
 
 
