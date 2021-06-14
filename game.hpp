@@ -24,6 +24,8 @@ constexpr int pink_pos_y = 11, pink_pos_x = 13;
 //食べられた時に戻る場所
 constexpr int nest_pos_y = 11, nest_pos_x = 13;
 
+constexpr int corner_cut = 110;
+
 //frightened_modeの制限時間[s]
 constexpr double frightened_time = 10;
 constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
@@ -166,14 +168,6 @@ struct position {
       else if(x > (f_width+2)*size) x = -2*size + (x - (f_width+2)*size);
     }
   }
-  void change_speed(bool ok = true){
-    if(!ison_block()) return;
-    if(is_intunnel() && ok) slow_down();
-    else if(state == frightened) slow_down();
-    else if(state == eaten) speed_up();
-    else if(state == normal) set_normal();
-    else printf("error");
-  }
   //壁に当たった場合、残りの移動量を返す
   int move(){
     if(is_stop()) return 0;
@@ -253,6 +247,7 @@ void position::change_direction(const position &target, int dir = -1){
     }
     if(dir == 2 && ny == 12 && (nx==13||nx==14)) //敵の出入り口
       return;
+    if(dir != rot) move_num += corner_cut;
   }
   //frightened_modeの時はランダム
   else if(check_state(frightened)){
@@ -315,26 +310,25 @@ void change_to_eaten(){
 
 void change_all_speed(bool is_ate_dots){
   //enemies
-  bool changed[] = {false};
+  bool c[] = {false};
 
   if(dots_remain_num <= 10){ //elroy2 dots left
     for(int i = 0; i <= 1; i++){
       enemies[i]->set_speed(85);
-      changed[i] = true;
+      c[i] = true;
     }
   }else if(dots_remain_num <= 20){ //elroy1 dots left
     for(int i = 0; i <= 1; i++){
       enemies[i]->set_speed(80);
-      changed[i] = true;
+      c[i] = true;
     }
   }
 
   for(int i = 0; i < 4; i++){
-    if(changed[i]) continue;
-    if(enemies[i]->check_state(eaten)) enemies[i]->set_speed(250); //check
-    else if(enemies[i]->is_intunnel()) enemies[i]->set_speed(40);
+    if(enemies[i]->check_state(eaten) && !c[i]) enemies[i]->set_speed(250); //check
+    else if(enemies[i]->is_intunnel() && !c[i]) enemies[i]->set_speed(40);
     else if(enemies[i]->check_state(frightened)) enemies[i]->set_speed(50);
-    else if(enemies[i]->check_state(normal)) enemies[i]->set_speed(75);
+    else if(enemies[i]->check_state(normal) && !c[i]) enemies[i]->set_speed(75);
   }
 
   //pacman
@@ -514,7 +508,6 @@ int update(double time, int r){
   return res;
 }
 
-#include <Windows.h>
 
 namespace python {
   //pacman, red,blue,orange,pink = 0,1,2,3,4
