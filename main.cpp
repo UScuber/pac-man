@@ -1610,7 +1610,6 @@ static PyObject *__pyx_pf_7gamelib_10is_limit(CYTHON_UNUSED PyObject *__pyx_self
  * def is_limit(i: int):
  *   return get_is_limit(i)             # <<<<<<<<<<<<<<
  * 
- * 
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L1_error)

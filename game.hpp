@@ -24,13 +24,13 @@ constexpr int pink_pos_y = 11, pink_pos_x = 13;
 //食べられた時に戻る場所
 constexpr int nest_pos_y = 11, nest_pos_x = 13;
 
-constexpr int corner_cut = 110;
+constexpr int corner_cut = 2200;
 
 //frightened_modeの制限時間[s]
-constexpr double frightened_time = 10;
+constexpr double frightened_time = 6;
 constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 //frightened_modeが終了する何秒[s]前から点滅させるか
-constexpr double frightened_limit_time = 3;
+constexpr double frightened_limit_time = 2;
 
 constexpr int dots_all_num = 246;
 
@@ -53,7 +53,7 @@ bool gameover = false;
 int wait_cnt = 0;
 int eat_num = 0; //食べた数
 double adjust_time = 0; //frightenedの時の時間を引く
-double frightened_start_time = 0;
+double frightened_start_time = -1;
 double current_time = 0;
 
 int dots_remain_num = dots_all_num;
@@ -248,8 +248,10 @@ void position::change_direction(const position &target, int dir = -1){
       if(get_field_val(ry+dy[rot], rx+dx[rot]) != wall) dir = rot;
       else return;
     }
-    if(dir == 2 && ny == 12 && (nx==13||nx==14)) //敵の出入り口
-      return;
+    if(dir == 2 && ny == 12 && (nx==13||nx==14)){ //敵の出入り口
+      if(dir == rot) return;
+      else dir = rot;
+    }
     if(dir != rot) move_num += corner_cut;
   }
   //frightened_modeの時はランダム
@@ -336,7 +338,7 @@ void change_all_speed(){
 
   //pacman
   //frightened_modeの場合
-  if(frightened_start_time != 0){
+  if(frightened_start_time != -1){
     if(is_ate_dots) pacman.set_speed(79);
     else pacman.set_speed(90);
   }else{
@@ -436,17 +438,15 @@ void change_scmode(){
 
 void start_frightened_mode(double time){
   set_state_enemies(frightened);
-  eat_num = 0;
-  frightened_start_time = time - adjust_time;
+  //adjust_timeを増やして時間を止めるため、adjust_timeを保存
+  frightened_start_time = adjust_time;
   reverse_enemies();
   printf("changed to frightened mode\n");
 }
 
 void end_frightened_mode(){
-  frightened_start_time = 0;
+  frightened_start_time = -1;
   set_state_enemies(normal);
-  printf("%d\n", enemies[0]->get_state());
-  adjust_time += frightened_time;
   eat_num = 0;
   printf("return to normal mode\n");
 }
@@ -465,10 +465,10 @@ void move_all(int r){
 //rはキーボードから受け付けた方向
 int update(double time, int r){
 
-  current_time = time;
-  if(frightened_start_time != 0){
+  if(frightened_start_time != -1){
+    adjust_time += time - current_time;
     //frightened_modeが終わったときor全部食べた時
-    if(time - adjust_time - frightened_start_time >= frightened_time){
+    if(adjust_time - frightened_start_time >= frightened_time){
       end_frightened_mode();
     }
   }
@@ -476,6 +476,8 @@ int update(double time, int r){
   else if(time - adjust_time >= time_table[cur_table_pos]){
     change_scmode();
   }
+
+  current_time = time;
 
   move_all(r);
 
@@ -502,9 +504,9 @@ int update(double time, int r){
       enem->start();
     }
     
-    if(frightened_start_time != 0 && eat_num == 4){
+    if(frightened_start_time != -1 && eat_num == 4){
       //adjust_timeを調節してfrightened_modeを終了させる
-      adjust_time = time - frightened_start_time - frightened_time; //check
+      end_frightened_mode();
     }
 
     for(auto enem : enemies){
@@ -543,9 +545,9 @@ namespace python {
   //frightened_modeが時間制限になりそうかどうか
   bool get_is_limit(int i){
     if(!i) return false;
-    if(frightened_time - (current_time - adjust_time - frightened_start_time) <= frightened_limit_time){
-      if(enemies[i - 1]->get_state() == frightened) return true;
-    }
+    //if(frightened_time - (current_time - adjust_time - frightened_start_time) <= frightened_limit_time){
+      //if(enemies[i - 1]->get_state() == frightened) return true;
+    //}
     return false;
   }
   int get_eat_num(){
