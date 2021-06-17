@@ -5,18 +5,15 @@
 #include <time.h>
 
 //ブロックの数（縦、横）
-constexpr int f_height = 31;
-constexpr int f_width = 28;
+constexpr int height = 31;
+constexpr int width = 28;
 
 constexpr int size = 6000; //1blockの大きさ
 constexpr int normal_spd = 880; //初期状態の速さ90%
 constexpr int slow_spd = 440; //低速時の速さ
 constexpr int high_spd = 2200; //高速時の速さ(巣に戻るとき)
-//ピクセル
-constexpr int height = (f_height - 1) * size + 1;
-constexpr int width = (f_width - 1) * size + 1;
 
-constexpr int pac_pos_y = 23, pac_pos_x = 13;
+constexpr int pac_pos_y = 23*size, pac_pos_x = 13*size+size/2;
 constexpr int red_pos_y = 11, red_pos_x = 13;
 constexpr int blue_pos_y = 11, blue_pos_x = 13;
 constexpr int oran_pos_y = 11, oran_pos_x = 13;
@@ -32,7 +29,7 @@ constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 //frightened_modeが終了する何秒[s]前から点滅させるか
 constexpr double frightened_limit_time = 2;
 
-constexpr int dots_all_num = 246;
+constexpr int dots_all_num = 244;
 
 constexpr int inf = 1000000000;
 enum{
@@ -86,7 +83,7 @@ const int time_table[] = { //chase,scatter modeを変える時間[s]
 };
 
 //フィールドの初期状態
-int field[f_height][f_width] = {
+int field[height][width] = {
   {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
   {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
   {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
@@ -110,7 +107,7 @@ int field[f_height][f_width] = {
   {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
   {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
   {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,DOTS,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,DOTS,wall},
+  {wall,DOTS,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,none,none,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,DOTS,wall},
   {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
   {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
   {wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall},
@@ -129,12 +126,12 @@ std::set<std::tuple<int,int,int>> isgate{
 
 //fieldの値を取得
 int get_field_val(int y, int x){
-  if(y == 14 && (x < 0 || x >= f_width)) return none; //14はワープのところ
-  if(y < 0 || y >= f_height || x < 0 || x >= f_width) return wall;
+  if(y == 14 && (x < 0 || x >= width)) return none; //14はワープのところ
+  if(y < 0 || y >= height || x < 0 || x >= width) return wall;
   return field[y][x];
 }
 void set_field_val(int y, int x, int t){
-  if(y < 0 || y >= f_height || x < 0 || x >= f_width);
+  if(y < 0 || y >= height || x < 0 || x >= width);
   else field[y][x] = t;
 }
 int round(const int &a){
@@ -165,10 +162,10 @@ struct position {
   void stop(){ Stop = true; }
   void set_state(const int &t){ state = t; }
   void warp(){
-    //(y,x) = (14, -2), (14, f_width + 2)
+    //(y,x) = (14, -2), (14, width + 2)
     if(y == 14*size){
-      if(x < -2*size) x = (f_width+2)*size - (-2*size - x);
-      else if(x > (f_width+2)*size) x = -2*size + (x - (f_width+2)*size);
+      if(x < -2*size) x = (width+2)*size - (-2*size - x);
+      else if(x > (width+2)*size) x = -2*size + (x - (width+2)*size);
     }
   }
   //壁に当たった場合、残りの移動量を返す
@@ -222,7 +219,7 @@ struct position {
   int state = normal;
   bool Stop = false;
 };
-position pacman(pac_pos_y*size, pac_pos_x*size, 1);
+position pacman(pac_pos_y, pac_pos_x, 1);
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
 position blue_enemy(blue_pos_y*size, blue_pos_x*size, 0);
 position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
@@ -376,7 +373,7 @@ void reverse_enemies(){
 }
 
 void red_move(){
-  position target(-4*size, (f_width-3)*size); //scatter
+  position target(-4*size, (width-3)*size); //scatter
   if(red_enemy.get_state() == eaten) //eaten
     target = position(nest_pos_y*size, nest_pos_x*size);
   else if(chase_mode) //chase
@@ -386,7 +383,7 @@ void red_move(){
 }
 
 void blue_move(){
-  position target((f_height+1)*size, f_width*size); //scatter
+  position target((height+1)*size, width*size); //scatter
   if(blue_enemy.get_state() == eaten) //eaten
     target = position(nest_pos_y*size, nest_pos_x*size);
   else if(chase_mode){ //chase
@@ -403,7 +400,7 @@ void blue_move(){
 
 void oran_move(){
   constexpr int max_dist = 8 * 8; //最大距離の2乗
-  position target((f_height+1)*size, 0); //scatter
+  position target((height+1)*size, 0); //scatter
   int d = pacman.dist(oran_enemy);
 
   if(oran_enemy.get_state() == eaten) //eaten
@@ -490,10 +487,14 @@ int update(double time, int r){
   const int v = get_field_val(y, x);
   if(v == dots || v == DOTS){
     set_field_val(y, x, none);
-    res = y*f_width + x;
+    res = y*width + x;
     dots_remain_num--;
     is_ate_dots = true;
     if(v == DOTS) start_frightened_mode(time);
+    if(dots_remain_num == 0){
+      //ステージクリア
+      printf("cleared!!!\n");
+    }
   }
 
   if(wait_cnt) wait_cnt--;
@@ -542,13 +543,12 @@ namespace python {
     if(!i) return pacman.is_stop();
     return enemies[i - 1]->is_stop();
   }
-  //frightened_modeが時間制限になりそうかどうか
-  bool get_is_limit(int i){
-    if(!i) return false;
-    //if(frightened_time - (current_time - adjust_time - frightened_start_time) <= frightened_limit_time){
-      //if(enemies[i - 1]->get_state() == frightened) return true;
-    //}
-    return false;
+  //frightened_modeの制限時間
+  double get_limit_time(int i){
+    if(!i) return inf;
+    if(enemies[i - 1]->get_state() == frightened)
+      return frightened_time - (adjust_time - frightened_start_time);
+    return inf;
   }
   int get_eat_num(){
     return eat_num;

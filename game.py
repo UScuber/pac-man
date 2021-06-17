@@ -20,8 +20,8 @@ OBJECTS = ["pacman", "red", "blue", "orange", "pink"]
 DIREC_NAME = ["up", "left", "down", "right"]
 #all of images
 #images[i]: normal, eaten, frightened
-STATES_NUM = 4
-NORMAL, EATEN, FRIGHTENED, SCORE, = range(STATES_NUM)
+STATES_NUM = 5
+NORMAL, EATEN, FRIGHTENED, SCORE, FLASH = range(STATES_NUM)
 images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(OBJECTS))] for _ in range(STATES_NUM)]
 ispress_key = [False] * 4
 KEY_NAME = ["Up", "Left", "Down", "Right"]
@@ -54,10 +54,14 @@ def update_images():
       if cpp.get_isstop(i):
         if s == 1: #eaten スコアの表示
           #i,flipはどの数字でもよい
-          if cpp.eat_num() == 0: print("error")
+          if cpp.eat_num() == 0: print("eat_num_error")
           canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
         continue
-      canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
+      t = int(cpp.limit_time(i) * 5)
+      if t <= 10 and (t & 1): #flash
+        canvas.itemconfig(OBJECTS[i], image= images[FLASH][i][r][flip])
+      else:
+        canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
       canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
     
     time.sleep(IMG_FRAME / 1000)
@@ -106,6 +110,10 @@ def read_all_images():
         #食べられた時の表示する200,400,800,1600の画像
         img_name = "images/eaten/"+str(1<<(j+1))+"00.png"
         images[SCORE][i][j][k] = tk.PhotoImage(file= img_name)
+        #flash
+        #残り数秒になった時に白く点滅する画像
+        img_name = "images/frightened/"+"1"+str(k)+".png"
+        images[FLASH][i][j][k] = tk.PhotoImage(file= img_name)
 
 #ウィンドウの作成
 def main():
