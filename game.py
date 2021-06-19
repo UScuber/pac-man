@@ -31,6 +31,8 @@ def press_key(event):
   key_state = event.keysym
   for i in range(len(KEY_NAME)):
     if key_state == KEY_NAME[i]:
+      if not cpp.is_started and (i & 1):
+        cpp.start_move() #動作の開始
       ispress_key[i] = True
 
 def release_key(event):
@@ -57,8 +59,8 @@ def update_images():
           if cpp.eat_num() == 0: print("eat_num_error")
           canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
         continue
-      t = int(cpp.limit_time(i) * 5)
-      if t <= 10 and (t & 1): #flash
+      t = int(cpp.limit_time(i) * 4)
+      if t <= 8 and not(t & 1): #flash
         canvas.itemconfig(OBJECTS[i], image= images[FLASH][i][r][flip])
       else:
         canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
@@ -152,7 +154,8 @@ def main():
   #pacman,enemiesを描画
   for i in [0,4,3,2,1]: #画像の奥行を設定
     x, y, r, s = cpp.get_xyrs(i)
-    canvas.create_image(0,0, image= images[s][i][r][flip], tag= OBJECTS[i])
+    canvas.create_image(x / cpp.sizec * SIZE + 20, y / cpp.sizec * SIZE + 24,
+                        image= images[s][i][r][flip], tag= OBJECTS[i])
 
 
   root.bind("<KeyPress>", press_key)

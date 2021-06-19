@@ -1068,7 +1068,9 @@ static const char __pyx_k_get_xyrs[] = "get_xyrs";
 static const char __pyx_k_main_pyx[] = "main.pyx";
 static const char __pyx_k_get_field[] = "get_field";
 static const char __pyx_k_get_isstop[] = "get_isstop";
+static const char __pyx_k_is_started[] = "is_started";
 static const char __pyx_k_limit_time[] = "limit_time";
+static const char __pyx_k_start_move[] = "start_move";
 static const char __pyx_k_update_pos[] = "update_pos";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static PyObject *__pyx_n_s_cline_in_traceback;
@@ -1079,12 +1081,14 @@ static PyObject *__pyx_n_s_get_isstop;
 static PyObject *__pyx_n_s_get_xyrs;
 static PyObject *__pyx_n_s_h;
 static PyObject *__pyx_n_s_i;
+static PyObject *__pyx_n_s_is_started;
 static PyObject *__pyx_n_s_limit_time;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_kp_s_main_pyx;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_r;
 static PyObject *__pyx_n_s_sizec;
+static PyObject *__pyx_n_s_start_move;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_time;
 static PyObject *__pyx_n_s_update_pos;
@@ -1093,25 +1097,27 @@ static PyObject *__pyx_n_s_x;
 static PyObject *__pyx_n_s_y;
 static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_y, PyObject *__pyx_v_x); /* proto */
 static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_self, double __pyx_v_time, PyObject *__pyx_v_r); /* proto */
-static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
-static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
-static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_7gamelib_10limit_time(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
+static PyObject *__pyx_pf_7gamelib_4start_move(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_7gamelib_6get_xyrs(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
+static PyObject *__pyx_pf_7gamelib_8get_isstop(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
+static PyObject *__pyx_pf_7gamelib_10eat_num(CYTHON_UNUSED PyObject *__pyx_self); /* proto */
+static PyObject *__pyx_pf_7gamelib_12limit_time(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i); /* proto */
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__3;
-static PyObject *__pyx_tuple__5;
-static PyObject *__pyx_tuple__7;
-static PyObject *__pyx_tuple__10;
+static PyObject *__pyx_tuple__6;
+static PyObject *__pyx_tuple__8;
+static PyObject *__pyx_tuple__11;
 static PyObject *__pyx_codeobj__2;
 static PyObject *__pyx_codeobj__4;
-static PyObject *__pyx_codeobj__6;
-static PyObject *__pyx_codeobj__8;
+static PyObject *__pyx_codeobj__5;
+static PyObject *__pyx_codeobj__7;
 static PyObject *__pyx_codeobj__9;
-static PyObject *__pyx_codeobj__11;
+static PyObject *__pyx_codeobj__10;
+static PyObject *__pyx_codeobj__12;
 /* Late includes */
 
-/* "main.pyx":25
- * sizec = size #cpp1block
+/* "main.pyx":28
+ * is_started = started
  * 
  * def get_field(y: int, x: int):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
@@ -1153,11 +1159,11 @@ static PyObject *__pyx_pw_7gamelib_1get_field(PyObject *__pyx_self, PyObject *__
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_x)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("get_field", 1, 2, 2, 1); __PYX_ERR(0, 25, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("get_field", 1, 2, 2, 1); __PYX_ERR(0, 28, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "get_field") < 0)) __PYX_ERR(0, 25, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "get_field") < 0)) __PYX_ERR(0, 28, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -1170,7 +1176,7 @@ static PyObject *__pyx_pw_7gamelib_1get_field(PyObject *__pyx_self, PyObject *__
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("get_field", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 25, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("get_field", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 28, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("gamelib.get_field", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1194,7 +1200,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_field", 0);
 
-  /* "main.pyx":26
+  /* "main.pyx":29
  * 
  * def get_field(y: int, x: int):
  *   return get_field_val(y, x)             # <<<<<<<<<<<<<<
@@ -1202,16 +1208,16 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
  * def update_pos(time: double, r):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_y); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_v_x); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 26, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_PyInt_From_int(get_field_val(__pyx_t_1, __pyx_t_2)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_y); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_As_int(__pyx_v_x); if (unlikely((__pyx_t_2 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(get_field_val(__pyx_t_1, __pyx_t_2)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 29, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":25
- * sizec = size #cpp1block
+  /* "main.pyx":28
+ * is_started = started
  * 
  * def get_field(y: int, x: int):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
@@ -1229,7 +1235,7 @@ static PyObject *__pyx_pf_7gamelib_get_field(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "main.pyx":28
+/* "main.pyx":31
  *   return get_field_val(y, x)
  * 
  * def update_pos(time: double, r):             # <<<<<<<<<<<<<<
@@ -1272,11 +1278,11 @@ static PyObject *__pyx_pw_7gamelib_3update_pos(PyObject *__pyx_self, PyObject *_
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_r)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("update_pos", 1, 2, 2, 1); __PYX_ERR(0, 28, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("update_pos", 1, 2, 2, 1); __PYX_ERR(0, 31, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "update_pos") < 0)) __PYX_ERR(0, 28, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "update_pos") < 0)) __PYX_ERR(0, 31, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -1284,12 +1290,12 @@ static PyObject *__pyx_pw_7gamelib_3update_pos(PyObject *__pyx_self, PyObject *_
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_time = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_time == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 28, __pyx_L3_error)
+    __pyx_v_time = __pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_time == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 31, __pyx_L3_error)
     __pyx_v_r = values[1];
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("update_pos", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 28, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("update_pos", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 31, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("gamelib.update_pos", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1312,22 +1318,22 @@ static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_sel
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("update_pos", 0);
 
-  /* "main.pyx":29
+  /* "main.pyx":32
  * 
  * def update_pos(time: double, r):
  *   return update(time, r)             # <<<<<<<<<<<<<<
  * 
- * def get_xyrs(i: int):
+ * def start_move():
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_r); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 29, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyInt_From_int(update(__pyx_v_time, __pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 29, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_r); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(update(__pyx_v_time, __pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":28
+  /* "main.pyx":31
  *   return get_field_val(y, x)
  * 
  * def update_pos(time: double, r):             # <<<<<<<<<<<<<<
@@ -1346,8 +1352,59 @@ static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_sel
   return __pyx_r;
 }
 
-/* "main.pyx":31
+/* "main.pyx":34
  *   return update(time, r)
+ * 
+ * def start_move():             # <<<<<<<<<<<<<<
+ *   start()
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_7gamelib_5start_move(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_5start_move = {"start_move", (PyCFunction)__pyx_pw_7gamelib_5start_move, METH_NOARGS, 0};
+static PyObject *__pyx_pw_7gamelib_5start_move(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("start_move (wrapper)", 0);
+  __pyx_r = __pyx_pf_7gamelib_4start_move(__pyx_self);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_7gamelib_4start_move(CYTHON_UNUSED PyObject *__pyx_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("start_move", 0);
+
+  /* "main.pyx":35
+ * 
+ * def start_move():
+ *   start()             # <<<<<<<<<<<<<<
+ * 
+ * def get_xyrs(i: int):
+ */
+  start();
+
+  /* "main.pyx":34
+ *   return update(time, r)
+ * 
+ * def start_move():             # <<<<<<<<<<<<<<
+ *   start()
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "main.pyx":37
+ *   start()
  * 
  * def get_xyrs(i: int):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
@@ -1355,20 +1412,20 @@ static PyObject *__pyx_pf_7gamelib_2update_pos(CYTHON_UNUSED PyObject *__pyx_sel
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_5get_xyrs(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_5get_xyrs = {"get_xyrs", (PyCFunction)__pyx_pw_7gamelib_5get_xyrs, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_5get_xyrs(PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pw_7gamelib_7get_xyrs(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_7get_xyrs = {"get_xyrs", (PyCFunction)__pyx_pw_7gamelib_7get_xyrs, METH_O, 0};
+static PyObject *__pyx_pw_7gamelib_7get_xyrs(PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_xyrs (wrapper)", 0);
-  __pyx_r = __pyx_pf_7gamelib_4get_xyrs(__pyx_self, ((PyObject *)__pyx_v_i));
+  __pyx_r = __pyx_pf_7gamelib_6get_xyrs(__pyx_self, ((PyObject *)__pyx_v_i));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pf_7gamelib_6get_xyrs(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -1382,7 +1439,7 @@ static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self,
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_xyrs", 0);
 
-  /* "main.pyx":32
+  /* "main.pyx":38
  * 
  * def get_xyrs(i: int):
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)             # <<<<<<<<<<<<<<
@@ -1390,19 +1447,19 @@ static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self,
  * def get_isstop(i: int):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyInt_From_int(python::get_posx(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(python::get_posx(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-  __pyx_t_3 = __Pyx_PyInt_From_int(python::get_posy(__pyx_t_1)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int(python::get_posy(__pyx_t_1)); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-  __pyx_t_4 = __Pyx_PyInt_From_int(python::get_rot(__pyx_t_1)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int(python::get_rot(__pyx_t_1)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-  __pyx_t_5 = __Pyx_PyInt_From_int(python::get_state(__pyx_t_1)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_From_int(python::get_state(__pyx_t_1)); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = PyTuple_New(4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 32, __pyx_L1_error)
+  __pyx_t_6 = PyTuple_New(4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 38, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_2);
@@ -1420,8 +1477,8 @@ static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self,
   __pyx_t_6 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":31
- *   return update(time, r)
+  /* "main.pyx":37
+ *   start()
  * 
  * def get_xyrs(i: int):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
@@ -1443,7 +1500,7 @@ static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "main.pyx":34
+/* "main.pyx":40
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  * def get_isstop(i: int):             # <<<<<<<<<<<<<<
@@ -1452,20 +1509,20 @@ static PyObject *__pyx_pf_7gamelib_4get_xyrs(CYTHON_UNUSED PyObject *__pyx_self,
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_7get_isstop(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_7get_isstop = {"get_isstop", (PyCFunction)__pyx_pw_7gamelib_7get_isstop, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_7get_isstop(PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pw_7gamelib_9get_isstop(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_9get_isstop = {"get_isstop", (PyCFunction)__pyx_pw_7gamelib_9get_isstop, METH_O, 0};
+static PyObject *__pyx_pw_7gamelib_9get_isstop(PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("get_isstop (wrapper)", 0);
-  __pyx_r = __pyx_pf_7gamelib_6get_isstop(__pyx_self, ((PyObject *)__pyx_v_i));
+  __pyx_r = __pyx_pf_7gamelib_8get_isstop(__pyx_self, ((PyObject *)__pyx_v_i));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pf_7gamelib_8get_isstop(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -1475,7 +1532,7 @@ static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_sel
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("get_isstop", 0);
 
-  /* "main.pyx":35
+  /* "main.pyx":41
  * 
  * def get_isstop(i: int):
  *   return get_is_stop(i)             # <<<<<<<<<<<<<<
@@ -1483,14 +1540,14 @@ static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_sel
  * def eat_num():
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 35, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyInt_From_int(python::get_is_stop(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 35, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyInt_From_int(python::get_is_stop(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":34
+  /* "main.pyx":40
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  * def get_isstop(i: int):             # <<<<<<<<<<<<<<
@@ -1509,7 +1566,7 @@ static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_sel
   return __pyx_r;
 }
 
-/* "main.pyx":37
+/* "main.pyx":43
  *   return get_is_stop(i)
  * 
  * def eat_num():             # <<<<<<<<<<<<<<
@@ -1518,20 +1575,20 @@ static PyObject *__pyx_pf_7gamelib_6get_isstop(CYTHON_UNUSED PyObject *__pyx_sel
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_9eat_num(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_9eat_num = {"eat_num", (PyCFunction)__pyx_pw_7gamelib_9eat_num, METH_NOARGS, 0};
-static PyObject *__pyx_pw_7gamelib_9eat_num(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_7gamelib_11eat_num(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_11eat_num = {"eat_num", (PyCFunction)__pyx_pw_7gamelib_11eat_num, METH_NOARGS, 0};
+static PyObject *__pyx_pw_7gamelib_11eat_num(PyObject *__pyx_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("eat_num (wrapper)", 0);
-  __pyx_r = __pyx_pf_7gamelib_8eat_num(__pyx_self);
+  __pyx_r = __pyx_pf_7gamelib_10eat_num(__pyx_self);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self) {
+static PyObject *__pyx_pf_7gamelib_10eat_num(CYTHON_UNUSED PyObject *__pyx_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -1540,7 +1597,7 @@ static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self) 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("eat_num", 0);
 
-  /* "main.pyx":38
+  /* "main.pyx":44
  * 
  * def eat_num():
  *   return get_eat_num()             # <<<<<<<<<<<<<<
@@ -1548,13 +1605,13 @@ static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self) 
  * def limit_time(i: int):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_eat_num()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 38, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(python::get_eat_num()); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":37
+  /* "main.pyx":43
  *   return get_is_stop(i)
  * 
  * def eat_num():             # <<<<<<<<<<<<<<
@@ -1573,7 +1630,7 @@ static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self) 
   return __pyx_r;
 }
 
-/* "main.pyx":40
+/* "main.pyx":46
  *   return get_eat_num()
  * 
  * def limit_time(i: int):             # <<<<<<<<<<<<<<
@@ -1582,20 +1639,20 @@ static PyObject *__pyx_pf_7gamelib_8eat_num(CYTHON_UNUSED PyObject *__pyx_self) 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_7gamelib_11limit_time(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
-static PyMethodDef __pyx_mdef_7gamelib_11limit_time = {"limit_time", (PyCFunction)__pyx_pw_7gamelib_11limit_time, METH_O, 0};
-static PyObject *__pyx_pw_7gamelib_11limit_time(PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pw_7gamelib_13limit_time(PyObject *__pyx_self, PyObject *__pyx_v_i); /*proto*/
+static PyMethodDef __pyx_mdef_7gamelib_13limit_time = {"limit_time", (PyCFunction)__pyx_pw_7gamelib_13limit_time, METH_O, 0};
+static PyObject *__pyx_pw_7gamelib_13limit_time(PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("limit_time (wrapper)", 0);
-  __pyx_r = __pyx_pf_7gamelib_10limit_time(__pyx_self, ((PyObject *)__pyx_v_i));
+  __pyx_r = __pyx_pf_7gamelib_12limit_time(__pyx_self, ((PyObject *)__pyx_v_i));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_7gamelib_10limit_time(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
+static PyObject *__pyx_pf_7gamelib_12limit_time(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -1605,7 +1662,7 @@ static PyObject *__pyx_pf_7gamelib_10limit_time(CYTHON_UNUSED PyObject *__pyx_se
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("limit_time", 0);
 
-  /* "main.pyx":41
+  /* "main.pyx":47
  * 
  * def limit_time(i: int):
  *   return get_limit_time(i)             # <<<<<<<<<<<<<<
@@ -1613,14 +1670,14 @@ static PyObject *__pyx_pf_7gamelib_10limit_time(CYTHON_UNUSED PyObject *__pyx_se
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 41, __pyx_L1_error)
-  __pyx_t_2 = PyFloat_FromDouble(python::get_limit_time(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_2 = PyFloat_FromDouble(python::get_limit_time(__pyx_t_1)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "main.pyx":40
+  /* "main.pyx":46
  *   return get_eat_num()
  * 
  * def limit_time(i: int):             # <<<<<<<<<<<<<<
@@ -1693,12 +1750,14 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_get_xyrs, __pyx_k_get_xyrs, sizeof(__pyx_k_get_xyrs), 0, 0, 1, 1},
   {&__pyx_n_s_h, __pyx_k_h, sizeof(__pyx_k_h), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
+  {&__pyx_n_s_is_started, __pyx_k_is_started, sizeof(__pyx_k_is_started), 0, 0, 1, 1},
   {&__pyx_n_s_limit_time, __pyx_k_limit_time, sizeof(__pyx_k_limit_time), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_kp_s_main_pyx, __pyx_k_main_pyx, sizeof(__pyx_k_main_pyx), 0, 0, 1, 0},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_r, __pyx_k_r, sizeof(__pyx_k_r), 0, 0, 1, 1},
   {&__pyx_n_s_sizec, __pyx_k_sizec, sizeof(__pyx_k_sizec), 0, 0, 1, 1},
+  {&__pyx_n_s_start_move, __pyx_k_start_move, sizeof(__pyx_k_start_move), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_time, __pyx_k_time, sizeof(__pyx_k_time), 0, 0, 1, 1},
   {&__pyx_n_s_update_pos, __pyx_k_update_pos, sizeof(__pyx_k_update_pos), 0, 0, 1, 1},
@@ -1715,74 +1774,83 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "main.pyx":25
- * sizec = size #cpp1block
+  /* "main.pyx":28
+ * is_started = started
  * 
  * def get_field(y: int, x: int):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
  * 
  */
-  __pyx_tuple_ = PyTuple_Pack(2, __pyx_n_s_y, __pyx_n_s_x); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(2, __pyx_n_s_y, __pyx_n_s_x); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
-  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_field, 25, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_codeobj__2 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple_, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_field, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__2)) __PYX_ERR(0, 28, __pyx_L1_error)
 
-  /* "main.pyx":28
+  /* "main.pyx":31
  *   return get_field_val(y, x)
  * 
  * def update_pos(time: double, r):             # <<<<<<<<<<<<<<
  *   return update(time, r)
  * 
  */
-  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_time, __pyx_n_s_r); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_tuple__3 = PyTuple_Pack(2, __pyx_n_s_time, __pyx_n_s_r); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
-  __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_update_pos, 28, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_update_pos, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 31, __pyx_L1_error)
 
-  /* "main.pyx":31
+  /* "main.pyx":34
  *   return update(time, r)
+ * 
+ * def start_move():             # <<<<<<<<<<<<<<
+ *   start()
+ * 
+ */
+  __pyx_codeobj__5 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_start_move, 34, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__5)) __PYX_ERR(0, 34, __pyx_L1_error)
+
+  /* "main.pyx":37
+ *   start()
  * 
  * def get_xyrs(i: int):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  */
-  __pyx_tuple__5 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 31, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__5);
-  __Pyx_GIVEREF(__pyx_tuple__5);
-  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__5, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_xyrs, 31, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_tuple__6 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__6);
+  __Pyx_GIVEREF(__pyx_tuple__6);
+  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_xyrs, 37, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 37, __pyx_L1_error)
 
-  /* "main.pyx":34
+  /* "main.pyx":40
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  * def get_isstop(i: int):             # <<<<<<<<<<<<<<
  *   return get_is_stop(i)
  * 
  */
-  __pyx_tuple__7 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 34, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__7);
-  __Pyx_GIVEREF(__pyx_tuple__7);
-  __pyx_codeobj__8 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__7, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_isstop, 34, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__8)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_tuple__8 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__8);
+  __Pyx_GIVEREF(__pyx_tuple__8);
+  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_get_isstop, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 40, __pyx_L1_error)
 
-  /* "main.pyx":37
+  /* "main.pyx":43
  *   return get_is_stop(i)
  * 
  * def eat_num():             # <<<<<<<<<<<<<<
  *   return get_eat_num()
  * 
  */
-  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_eat_num, 37, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(0, 0, 0, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_eat_num, 43, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(0, 43, __pyx_L1_error)
 
-  /* "main.pyx":40
+  /* "main.pyx":46
  *   return get_eat_num()
  * 
  * def limit_time(i: int):             # <<<<<<<<<<<<<<
  *   return get_limit_time(i)
  * 
  */
-  __pyx_tuple__10 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 40, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__10);
-  __Pyx_GIVEREF(__pyx_tuple__10);
-  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_limit_time, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_tuple__11 = PyTuple_Pack(1, __pyx_n_s_i); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__11);
+  __Pyx_GIVEREF(__pyx_tuple__11);
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_main_pyx, __pyx_n_s_limit_time, 46, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -2063,112 +2131,136 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "main.pyx":21
+  /* "main.pyx":23
  * #
  * 
  * h = height             # <<<<<<<<<<<<<<
  * w = width
  * sizec = size #cpp1block
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(height); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 21, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(height); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_h, __pyx_t_1) < 0) __PYX_ERR(0, 21, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_h, __pyx_t_1) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":22
+  /* "main.pyx":24
  * 
  * h = height
  * w = width             # <<<<<<<<<<<<<<
  * sizec = size #cpp1block
- * 
+ * is_started = started
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(width); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 22, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(width); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_w, __pyx_t_1) < 0) __PYX_ERR(0, 22, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "main.pyx":23
- * h = height
- * w = width
- * sizec = size #cpp1block             # <<<<<<<<<<<<<<
- * 
- * def get_field(y: int, x: int):
- */
-  __pyx_t_1 = __Pyx_PyInt_From_int(size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 23, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sizec, __pyx_t_1) < 0) __PYX_ERR(0, 23, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_w, __pyx_t_1) < 0) __PYX_ERR(0, 24, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":25
+ * h = height
+ * w = width
+ * sizec = size #cpp1block             # <<<<<<<<<<<<<<
+ * is_started = started
+ * 
+ */
+  __pyx_t_1 = __Pyx_PyInt_From_int(size); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_sizec, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "main.pyx":26
+ * w = width
  * sizec = size #cpp1block
+ * is_started = started             # <<<<<<<<<<<<<<
+ * 
+ * def get_field(y: int, x: int):
+ */
+  __pyx_t_1 = __Pyx_PyInt_From_int(started); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_is_started, __pyx_t_1) < 0) __PYX_ERR(0, 26, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "main.pyx":28
+ * is_started = started
  * 
  * def get_field(y: int, x: int):             # <<<<<<<<<<<<<<
  *   return get_field_val(y, x)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_1get_field, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 25, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_1get_field, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_field, __pyx_t_1) < 0) __PYX_ERR(0, 25, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_field, __pyx_t_1) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":28
+  /* "main.pyx":31
  *   return get_field_val(y, x)
  * 
  * def update_pos(time: double, r):             # <<<<<<<<<<<<<<
  *   return update(time, r)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_3update_pos, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 28, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_3update_pos, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_update_pos, __pyx_t_1) < 0) __PYX_ERR(0, 28, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_update_pos, __pyx_t_1) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":31
+  /* "main.pyx":34
  *   return update(time, r)
+ * 
+ * def start_move():             # <<<<<<<<<<<<<<
+ *   start()
+ * 
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_5start_move, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_start_move, __pyx_t_1) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "main.pyx":37
+ *   start()
  * 
  * def get_xyrs(i: int):             # <<<<<<<<<<<<<<
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_5get_xyrs, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_7get_xyrs, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_xyrs, __pyx_t_1) < 0) __PYX_ERR(0, 31, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_xyrs, __pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":34
+  /* "main.pyx":40
  *   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
  * 
  * def get_isstop(i: int):             # <<<<<<<<<<<<<<
  *   return get_is_stop(i)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_7get_isstop, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_9get_isstop, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_isstop, __pyx_t_1) < 0) __PYX_ERR(0, 34, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_get_isstop, __pyx_t_1) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":37
+  /* "main.pyx":43
  *   return get_is_stop(i)
  * 
  * def eat_num():             # <<<<<<<<<<<<<<
  *   return get_eat_num()
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_9eat_num, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_11eat_num, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_eat_num, __pyx_t_1) < 0) __PYX_ERR(0, 37, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_eat_num, __pyx_t_1) < 0) __PYX_ERR(0, 43, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "main.pyx":40
+  /* "main.pyx":46
  *   return get_eat_num()
  * 
  * def limit_time(i: int):             # <<<<<<<<<<<<<<
  *   return get_limit_time(i)
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_11limit_time, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7gamelib_13limit_time, NULL, __pyx_n_s_gamelib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_limit_time, __pyx_t_1) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_limit_time, __pyx_t_1) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "main.pyx":1

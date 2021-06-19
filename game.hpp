@@ -23,11 +23,11 @@ constexpr int nest_pos_y = 11, nest_pos_x = 13;
 
 constexpr int corner_cut = 2200;
 
-//frightened_modeの制限時間[s]
-constexpr double frightened_time = 6;
-constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 //frightened_modeが終了する何秒[s]前から点滅させるか
-constexpr double frightened_limit_time = 2;
+constexpr double frightened_limit_time = 9*0.25;
+//frightened_modeの制限時間[s]
+constexpr double frightened_time = 6 + frightened_limit_time;
+constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
 
 constexpr int dots_all_num = 244;
 
@@ -58,6 +58,7 @@ int dots_remain_num = dots_all_num;
 //最後にパックマンがいたマスの場所
 int last_y = 0, last_x = 0;
 bool is_ate_dots = false;
+bool started = false;
 
 const int dy[] = {-1,0,1,0};
 const int dx[] = {0,-1,0,1};
@@ -217,7 +218,7 @@ struct position {
   int y,x,rot;
   int spd = normal_spd;
   int state = normal;
-  bool Stop = false;
+  bool Stop = true;
 };
 position pacman(pac_pos_y, pac_pos_x, 1);
 position red_enemy(red_pos_y*size, red_pos_x*size, 0);
@@ -457,10 +458,19 @@ void move_all(int r){
   pacman.change_direction(position(), r);
 }
 
-
+void start(){
+  pacman.start();
+  for(auto &enem : enemies) enem->start();
+  started = true;
+}
 //Pythonから毎フレーム呼び出される
 //rはキーボードから受け付けた方向
 int update(double time, int r){
+  if(!started){
+    current_time = time;
+    adjust_time = time;
+    return -1;
+  }
 
   if(frightened_start_time != -1){
     adjust_time += time - current_time;
