@@ -45,3 +45,4 @@ def eat_num():
 
 def limit_time(i: int):
   return get_limit_time(i)
+

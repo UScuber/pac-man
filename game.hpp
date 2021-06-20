@@ -27,7 +27,7 @@ constexpr int corner_cut = 2200;
 constexpr double frightened_limit_time = 9*0.25;
 //frightened_modeの制限時間[s]
 constexpr double frightened_time = 6 + frightened_limit_time;
-constexpr int eat_cnt = 30; //食べたときに止まるフレーム数
+constexpr int eat_cnt = 50; //食べたときに止まるフレーム数
 
 constexpr int dots_all_num = 244;
 
@@ -269,6 +269,7 @@ void position::change_direction(const position &target, int dir = -1){
   else if(get_state() == eaten && ry == nest_pos_y && rx == nest_pos_x){
     rotate(2);
     set_state(normal);
+    if(wait_cnt) stop();
     printf("returned\n");
     return;
   }
@@ -303,10 +304,14 @@ void position::change_direction(const position &target, int dir = -1){
 }
 
 void change_to_eaten(){
+  wait_cnt = eat_cnt;
   pacman.stop();
   //戻る途中でなければ動作を一時的に止める
   for(auto &enem : enemies){
-    if(enem->get_state() != eaten) enem->stop();
+    if(enem->get_state() != eaten){
+      enem->stop();
+      printf("stopped ");
+    }
   }
   eat_num++;
 }
@@ -351,7 +356,6 @@ bool position::is_touch(){
     gameover = true;
     printf("gameover!\n");
   }else if(get_state() == frightened){
-    wait_cnt = eat_cnt;
     //stop, eaten_modeにする
     stop(); set_state(eaten);
     change_to_eaten();
@@ -438,6 +442,7 @@ void start_frightened_mode(double time){
   set_state_enemies(frightened);
   //adjust_timeを増やして時間を止めるため、adjust_timeを保存
   frightened_start_time = adjust_time;
+  eat_num = 0;
   reverse_enemies();
   printf("changed to frightened mode\n");
 }
@@ -458,6 +463,7 @@ void move_all(int r){
   pacman.change_direction(position(), r);
 }
 
+//Pythonから呼び出される
 void start(){
   pacman.start();
   for(auto &enem : enemies) enem->start();
@@ -472,8 +478,11 @@ int update(double time, int r){
     return -1;
   }
 
+  double dt = time - current_time;
+  current_time = time;
+
   if(frightened_start_time != -1){
-    adjust_time += time - current_time;
+    adjust_time += dt;
     //frightened_modeが終わったときor全部食べた時
     if(adjust_time - frightened_start_time >= frightened_time){
       end_frightened_mode();
@@ -483,8 +492,6 @@ int update(double time, int r){
   else if(time - adjust_time >= time_table[cur_table_pos]){
     change_scmode();
   }
-
-  current_time = time;
 
   move_all(r);
 
@@ -507,20 +514,22 @@ int update(double time, int r){
     }
   }
 
-  if(wait_cnt) wait_cnt--;
-
-  if(!wait_cnt){
-    pacman.start();
-    for(auto enem : enemies){
+  if(wait_cnt){
+    wait_cnt--;
+    printf("s");
+    //時間を停止する
+    frightened_start_time += dt;
+  }else{
+    if(pacman.is_stop()) pacman.start();
+    for(auto &enem : enemies) if(enem->is_stop()){
       enem->start();
     }
     
     if(frightened_start_time != -1 && eat_num == 4){
-      //adjust_timeを調節してfrightened_modeを終了させる
       end_frightened_mode();
     }
 
-    for(auto enem : enemies){
+    for(auto &enem : enemies){
       if(enem->is_touch()) return res;
     }
   }

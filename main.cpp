@@ -1667,7 +1667,6 @@ static PyObject *__pyx_pf_7gamelib_12limit_time(CYTHON_UNUSED PyObject *__pyx_se
  * def limit_time(i: int):
  *   return get_limit_time(i)             # <<<<<<<<<<<<<<
  * 
- * 
  */
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = __Pyx_PyInt_As_int(__pyx_v_i); if (unlikely((__pyx_t_1 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 47, __pyx_L1_error)
