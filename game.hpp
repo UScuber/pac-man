@@ -27,7 +27,7 @@ constexpr int corner_cut = 2200;
 constexpr double frightened_limit_time = 9*0.25;
 //frightened_modeの制限時間[s]
 constexpr double frightened_time = 6 + frightened_limit_time;
-constexpr int eat_cnt = 50; //食べたときに止まるフレーム数
+constexpr int eat_cnt = 35; //食べたときに止まるフレーム数
 
 constexpr int dots_all_num = 244;
 
@@ -333,7 +333,7 @@ void change_all_speed(){
   }
 
   for(int i = 0; i < 4; i++){
-    if(enemies[i]->get_state() == eaten) enemies[i]->set_speed(250); //check
+    if(enemies[i]->get_state() == eaten) enemies[i]->set_speed(200); //check
     else if(enemies[i]->is_intunnel()) enemies[i]->set_speed(40);
     else if(enemies[i]->get_state() == frightened) enemies[i]->set_speed(50);
     else if(enemies[i]->get_state() == normal && !c[i]) enemies[i]->set_speed(75);
@@ -465,6 +465,8 @@ void move_all(int r){
 
 //Pythonから呼び出される
 void start(){
+  if(started) return;
+  //ここより下は開始の時だけ実行されるようにする
   pacman.start();
   for(auto &enem : enemies) enem->start();
   started = true;
@@ -516,14 +518,12 @@ int update(double time, int r){
 
   if(wait_cnt){
     wait_cnt--;
-    printf("s");
     //時間を停止する
     frightened_start_time += dt;
   }else{
-    if(pacman.is_stop()) pacman.start();
-    for(auto &enem : enemies) if(enem->is_stop()){
+    pacman.start();
+    for(auto &enem : enemies)
       enem->start();
-    }
     
     if(frightened_start_time != -1 && eat_num == 4){
       end_frightened_mode();

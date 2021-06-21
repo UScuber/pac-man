@@ -4,7 +4,6 @@ cdef extern from "game.hpp":
   cdef int height
   cdef int width
   cdef int size
-  cdef int started
   cdef int get_field_val(int y, int x)
   cdef int update(double time, int r)
   cdef void start()
@@ -23,7 +22,6 @@ cdef extern from "game.hpp" namespace "python":
 h = height
 w = width
 sizec = size #cppでの1blockの大きさ
-is_started = started
 
 def get_field(y: int, x: int):
   return get_field_val(y, x)

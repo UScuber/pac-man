@@ -31,7 +31,7 @@ def press_key(event):
   key_state = event.keysym
   for i in range(len(KEY_NAME)):
     if key_state == KEY_NAME[i]:
-      if not cpp.is_started and (i & 1):
+      if i & 1:
         cpp.start_move() #動作の開始
       ispress_key[i] = True
 
