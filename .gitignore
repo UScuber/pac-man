@@ -1,3 +1,4 @@
-run.bat
-build.bat
 .vscode
+*.pyd
+main.cpp
+build/
