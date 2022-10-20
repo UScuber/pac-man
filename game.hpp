@@ -32,18 +32,20 @@ constexpr int eat_cnt = 35; //食べたときに止まるフレーム数
 constexpr int dots_all_num = 244;
 
 constexpr int inf = 1000000000;
-enum{
+enum {
   none, wall, //黒、壁
   pac, //Pac-Man
   red, blue, orange, pink, //enemies
   dots, DOTS
 };
 //敵の状態
-enum{
+enum {
   normal,
   eaten,
   frightened
 };
+// rotate
+enum { U,L,D,R };
 bool chase_mode = true;
 bool gameover = false;
 
@@ -60,18 +62,18 @@ int last_y = 0, last_x = 0;
 bool is_ate_dots = false;
 bool started = false;
 
-const int dy[] = {-1,0,1,0};
-const int dx[] = {0,-1,0,1};
+constexpr int dy[] = { -1,0,1,0 };
+constexpr int dx[] = { 0,-1,0,1 };
 //pink target
-const int pty[] = {-4,0,4,0};
-const int ptx[] = {-4,-4,0,4};
+constexpr int pty[] = { -4,0,4,0 };
+constexpr int ptx[] = { -4,-4,0,4 };
 //blue center
-const int bcy[] = {-2,0,2,0};
-const int bcx[] = {-2,-2,0,2};
+constexpr int bcy[] = { -2,0,2,0 };
+constexpr int bcx[] = { -2,-2,0,2 };
 
 
 int cur_table_pos = 0;
-const int time_table[] = { //chase,scatter modeを変える時間[s]
+constexpr int time_table[] = { //chase,scatter modeを変える時間[s]
   0, //changed to scatter_mode
   7, //when 7[s], changes to chase_mode
   20 +7, //when 20+7[s], changes to scatter_mode
@@ -85,64 +87,64 @@ const int time_table[] = { //chase,scatter modeを変える時間[s]
 
 //フィールドの初期状態
 int field[height][width] = {
-  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall},
-  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,DOTS,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,DOTS,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {none,none,none,none,none,none,dots,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,dots,none,none,none,none,none,none},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall},
-  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall},
-  {wall,DOTS,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,none,none,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,DOTS,wall},
-  {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
-  {wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall},
-  {wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall},
-  {wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall},
-  {wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall},
-  {wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall},
-  {wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall}
+  { wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall },
+  { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,DOTS,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,DOTS,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { none,none,none,none,none,none,dots,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,dots,none,none,none,none,none,none },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall },
+  { wall,DOTS,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,none,none,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,DOTS,wall },
+  { wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall },
+  { wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,dots,wall,wall,wall },
+  { wall,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,wall },
+  { wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall },
+  { wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,dots,wall },
+  { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
+  { wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall },
 };
 
 //enemyが入れないところ{y, x, r}
 std::set<std::tuple<int,int,int>> isgate{
-  {12,13,2},{12,14,2}, //敵の出入り口
-  {10,12,0},{10,15,0}, //上
-  {22,12,0},{22,15,0}, //下
+  { 12,13,D }, { 12,14,D }, //敵の出入り口
+  { 10,12,U }, { 10,15,U }, //上
+  { 22,12,U }, { 22,15,U }, //下
 };
 
 //fieldの値を取得
-int get_field_val(int y, int x){
+int get_field_val(const int y, const int x){
   if(y == 14 && (x < 0 || x >= width)) return none; //14はワープのところ
   if(y < 0 || y >= height || x < 0 || x >= width) return wall;
   return field[y][x];
 }
-void set_field_val(int y, int x, int t){
+void set_field_val(const int y, const int x, const int t){
   if(y < 0 || y >= height || x < 0 || x >= width);
   else field[y][x] = t;
 }
-int round(const int &a){
-  return (a+size/2)/size;
+constexpr int round(const int a){
+  return (a + size/2) / size;
 }
 
 //direction: 0,1,2,3 = up,left,down,right
 //方向は小さいほうから優先度高め
-struct position {
-  position(int y = 0, int x = 0, int r = 0): y(y), x(x), rot(r){}
+struct Position {
+  Position(const int y=0, const int x=0, const int r=U): y(y), x(x), rot(r){}
   int get_y() const{ return y; }
   int get_x() const{ return x; }
   int get_r() const{ return rot; }
@@ -152,16 +154,16 @@ struct position {
   bool is_stop() const{ return Stop; }
   int get_state() const{ return state; }
   //方向をrにセット
-  void rotate(const int &r){ rot = r; }
+  void rotate(const int r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
   void slow_down(){ spd = slow_spd; }
   void set_normal(){ spd = normal_spd; }
   void speed_up(){ spd = high_spd; }
   //最大速度のt%の速度に設定
-  void set_speed(int t){ spd = 11 * t; }
+  void set_speed(const int t){ spd = t * 11; }
   void start(){ Stop = false; }
   void stop(){ Stop = true; }
-  void set_state(const int &t){ state = t; }
+  void set_state(const int t){ state = t; }
   void warp(){
     //(y,x) = (14, -2), (14, width + 2)
     if(y == 14*size){
@@ -172,14 +174,14 @@ struct position {
   //壁に当たった場合、残りの移動量を返す
   int move(){
     if(is_stop()) return 0;
-    int ry = round(y);
-    int rx = round(x);
-    int ty = (ry*size - y) * dy[rot];
-    int tx = (rx*size - x) * dx[rot];
+    const int ry = round(y);
+    const int rx = round(x);
+    const int ty = (ry*size - y) * dy[rot];
+    const int tx = (rx*size - x) * dx[rot];
     
     //現在の方向と同じだった場合
     if(0 <= ty && ty < spd && 0 <= tx && tx < spd){
-      int res = ty + tx; //動く量
+      const int res = ty + tx; //動く量
       y += dy[rot] * res;
       x += dx[rot] * res;
       //if(get_field_val(ry+dy[rot], rx+dx[rot]) == wall) return 0;
@@ -193,47 +195,47 @@ struct position {
     return 0;
   }
   //thisとaとの距離
-  int dist(const position &a) const{
-    int ay = a.round_y(), ax = a.round_x();
-    int ty = round_y(), tx = round_x();
+  int dist(const Position &a) const{
+    const int ay = a.round_y(), ax = a.round_x();
+    const int ty = round_y(), tx = round_x();
     return (ay-ty)*(ay-ty) + (ax-tx)*(ax-tx);
   }
   //thisと(y*size,x*size)との距離
-  int dist(const int &sy, const int &sx) const{
-    int ty = round_y(), tx = round_x();
+  int dist(const int sy, const int sx) const{
+    const int ty = round_y(), tx = round_x();
     return (sy-ty)*(sy-ty) + (sx-tx)*(sx-tx);
   }
-  bool isopposite(const int &r) const{ return (rot + 2) % 4 == r; }
+  bool isopposite(const int r) const{ return (rot + 2) % 4 == r; }
   bool ison_block() const{ return !(y % size || x % size); }
   //ワープする所の通路にいるかどうか
   bool is_intunnel() const{
     if(y != 14*size) return false;
-    int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
+    const int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
     return 9*size <= d;
   }
   //パックマンと触れたか判定する
   bool is_touch();
-  void change_direction(const position &, int);
+  void change_direction(const Position &target, int dir);
   private:
   int y,x,rot;
   int spd = normal_spd;
   int state = normal;
   bool Stop = true;
 };
-position pacman(pac_pos_y, pac_pos_x, 1);
-position red_enemy(red_pos_y*size, red_pos_x*size, 0);
-position blue_enemy(blue_pos_y*size, blue_pos_x*size, 0);
-position oran_enemy(oran_pos_y*size, oran_pos_x*size, 0);
-position pink_enemy(pink_pos_y*size, pink_pos_x*size, 0);
+Position pacman(pac_pos_y, pac_pos_x, L);
+Position red_enemy(red_pos_y*size, red_pos_x*size, U);
+Position blue_enemy(blue_pos_y*size, blue_pos_x*size, U);
+Position oran_enemy(oran_pos_y*size, oran_pos_x*size, U);
+Position pink_enemy(pink_pos_y*size, pink_pos_x*size, U);
 
-position *enemies[] = { &red_enemy, &blue_enemy, &oran_enemy, &pink_enemy };
+Position *enemies[] = { &red_enemy, &blue_enemy, &oran_enemy, &pink_enemy };
 //方向転換、次に移動すべき回転場所を返す
-void position::change_direction(const position &target, int dir = -1){
+void Position::change_direction(const Position &target, int dir=-1){
   int move_num = move(); //動ける量
 
   if(!ison_block()) return;
 
-  int ry = round_y(), rx = round_x();
+  const int ry = round_y(), rx = round_x();
 
   //pac-manからの方向の入力を確かめる
   if(dir != -1){
@@ -246,7 +248,7 @@ void position::change_direction(const position &target, int dir = -1){
       if(get_field_val(ry+dy[rot], rx+dx[rot]) != wall) dir = rot;
       else return;
     }
-    if(dir == 2 && ny == 12 && (nx==13||nx==14)){ //敵の出入り口
+    if(dir == 2 && ny == 12 && (nx==13 || nx==14)){ //敵の出入り口
       if(dir == rot) return;
       else dir = rot;
     }
@@ -256,12 +258,12 @@ void position::change_direction(const position &target, int dir = -1){
   else if(get_state() == frightened){
     while(true){
       dir = rand() % 4;
-      int ny = ry + dy[dir];
-      int nx = rx + dx[dir];
+      const int ny = ry + dy[dir];
+      const int nx = rx + dx[dir];
 
       if(isopposite(dir)) continue;
       if(get_field_val(ny, nx) == wall) continue;
-      if(isgate.count({ny,nx, dir})) continue;
+      if(isgate.count({ ny,nx, dir })) continue;
       break;
     }
   }
@@ -276,13 +278,13 @@ void position::change_direction(const position &target, int dir = -1){
   else{
     int dist = inf;
     for(int i = 0; i < 4; i++){
-      int ny = ry + dy[i];
-      int nx = rx + dx[i];
+      const int ny = ry + dy[i];
+      const int nx = rx + dx[i];
 
       if(isopposite(i)) continue;
       if(get_field_val(ny, nx) == wall) continue;
-      if(isgate.count({ny,nx, i})) continue;
-      int d = target.dist(ny, nx);
+      if(isgate.count({ ny,nx, i })) continue;
+      const int d = target.dist(ny, nx);
       if(dist > d){
         dist = d;
         dir = i;
@@ -318,7 +320,7 @@ void change_to_eaten(){
 
 void change_all_speed(){
   //enemies
-  bool c[4] = {false};
+  bool c[4] = {};
 
   if(dots_remain_num <= 10){ //elroy2 dots left
     for(int i = 0; i <= 1; i++){
@@ -350,7 +352,7 @@ void change_all_speed(){
   }
 }
 
-bool position::is_touch(){
+bool Position::is_touch(){
   if(dist(pacman) || get_state() == eaten) return false;
   if(get_state() == normal){
     gameover = true;
@@ -363,7 +365,7 @@ bool position::is_touch(){
   return true;
 }
 
-void set_state_enemies(int st){
+void set_state_enemies(const int st){
   for(auto &enem : enemies){
     if(enem->get_state() != eaten)
       enem->set_state(st);
@@ -378,9 +380,9 @@ void reverse_enemies(){
 }
 
 void red_move(){
-  position target(-4*size, (width-3)*size); //scatter
+  Position target(-4*size, (width-3)*size); //scatter
   if(red_enemy.get_state() == eaten) //eaten
-    target = position(nest_pos_y*size, nest_pos_x*size);
+    target = Position(nest_pos_y*size, nest_pos_x*size);
   else if(chase_mode) //chase
     target = pacman;
 
@@ -388,28 +390,28 @@ void red_move(){
 }
 
 void blue_move(){
-  position target((height+1)*size, width*size); //scatter
+  Position target((height+1)*size, width*size); //scatter
   if(blue_enemy.get_state() == eaten) //eaten
-    target = position(nest_pos_y*size, nest_pos_x*size);
+    target = Position(nest_pos_y*size, nest_pos_x*size);
   else if(chase_mode){ //chase
-    int r = pacman.get_r();
-    int py = pacman.round_y() + bcy[r];
-    int px = pacman.round_x() + bcx[r];
+    const int r = pacman.get_r();
+    const int py = pacman.round_y() + bcy[r];
+    const int px = pacman.round_x() + bcx[r];
 
-    int ty = 2*py - red_enemy.round_y();
-    int tx = 2*px - red_enemy.round_x();
-    target = position(ty*size, tx*size);
+    const int ty = 2*py - red_enemy.round_y();
+    const int tx = 2*px - red_enemy.round_x();
+    target = Position(ty*size, tx*size);
   }
   blue_enemy.change_direction(target);
 }
 
 void oran_move(){
-  constexpr int max_dist = 8 * 8; //最大距離の2乗
-  position target((height+1)*size, 0); //scatter
-  int d = pacman.dist(oran_enemy);
+  static constexpr int max_dist = 8 * 8; //最大距離の2乗
+  Position target((height+1)*size, 0); //scatter
+  const int d = pacman.dist(oran_enemy);
 
   if(oran_enemy.get_state() == eaten) //eaten
-    target = position(nest_pos_y*size, nest_pos_x*size);
+    target = Position(nest_pos_y*size, nest_pos_x*size);
   else if(d >= max_dist && chase_mode) //chase
     target = pacman;
   
@@ -417,14 +419,14 @@ void oran_move(){
 }
 
 void pink_move(){
-  position target(-4*size, 2*size); //scatter
+  Position target(-4*size, 2*size); //scatter
   if(pink_enemy.get_state() == eaten) //eaten
-    target = position(nest_pos_y*size, nest_pos_x*size);
+    target = Position(nest_pos_y*size, nest_pos_x*size);
   else if(chase_mode){ //chase
-    int r = pacman.get_r();
-    int py = pacman.round_y() + pty[r];
-    int px = pacman.round_x() + ptx[r];
-    target = position(py*size, px*size);
+    const int r = pacman.get_r();
+    const int py = pacman.round_y() + pty[r];
+    const int px = pacman.round_x() + ptx[r];
+    target = Position(py*size, px*size);
   }
   pink_enemy.change_direction(target);
 }
@@ -438,7 +440,7 @@ void change_scmode(){
   cur_table_pos++;
 }
 
-void start_frightened_mode(double time){
+void start_frightened_mode(const double time){
   set_state_enemies(frightened);
   //adjust_timeを増やして時間を止めるため、adjust_timeを保存
   frightened_start_time = adjust_time;
@@ -454,13 +456,13 @@ void end_frightened_mode(){
   printf("return to normal mode\n");
 }
 //1フレームだけ進める
-void move_all(int r){
+void move_all(const int r){
   red_move();
   blue_move();
   oran_move();
   pink_move();
 
-  pacman.change_direction(position(), r);
+  pacman.change_direction(Position(), r);
 }
 
 //Pythonから呼び出される
@@ -473,14 +475,14 @@ void start(){
 }
 //Pythonから毎フレーム呼び出される
 //rはキーボードから受け付けた方向
-int update(double time, int r){
+int update(const double time, const int r){
   if(!started){
     current_time = time;
     adjust_time = time;
     return -1;
   }
 
-  double dt = time - current_time;
+  const double dt = time - current_time;
   current_time = time;
 
   if(frightened_start_time != -1){
@@ -498,8 +500,8 @@ int update(double time, int r){
   move_all(r);
 
   int res = -1;
-  int y = pacman.round_y();
-  int x = pacman.round_x();
+  const int y = pacman.round_y();
+  const int x = pacman.round_x();
   if(last_y != y || last_x != x) is_ate_dots = false;
   last_y = y; last_x = x;
   //dotsを取った時の処理
