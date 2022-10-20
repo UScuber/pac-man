@@ -539,7 +539,7 @@ int update(double time, int r){
 }
 
 
-namespace python {
+namespace Python {
   //pacman, red,blue,orange,pink = 0,1,2,3,4
   //現在の位置を出力する
   int get_posy(int i){
@@ -572,5 +572,7 @@ namespace python {
   int get_eat_num(){
     return eat_num;
   }
-  
+  bool get_is_game_over(){
+    return gameover;
+  }
 };

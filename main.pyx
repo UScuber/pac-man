@@ -8,7 +8,7 @@ cdef extern from "game.hpp":
   cdef int update(double time, int r)
   cdef void start()
 
-cdef extern from "game.hpp" namespace "python":
+cdef extern from "game.hpp" namespace "Python":
   cdef int get_posy(int i)
   cdef int get_posx(int i)
   cdef int get_rot(int i)
@@ -16,6 +16,7 @@ cdef extern from "game.hpp" namespace "python":
   cdef int get_is_stop(int i)
   cdef double get_limit_time(int i)
   cdef int get_eat_num()
+  cdef int get_is_game_over()
 
 #同じ名前だとコンパイルエラーが出るため
 
@@ -43,4 +44,7 @@ def eat_num():
 
 def limit_time(i: int):
   return get_limit_time(i)
+
+def is_game_over():
+  return get_is_game_over()
 
