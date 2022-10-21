@@ -542,39 +542,51 @@ int update(const double time, const int r){
 
 
 namespace Python {
-  //pacman, red,blue,orange,pink = 0,1,2,3,4
-  //現在の位置を出力する
-  int get_posy(int i){
-    if(!i) return pacman.get_y();
-    return enemies[i - 1]->get_y();
-  }
-  int get_posx(int i){
-    if(!i) return pacman.get_x();
-    return enemies[i - 1]->get_x();
-  }
-  int get_rot(int i){
-    if(!i) return pacman.get_r();
-    return enemies[i - 1]->get_r();
-  }
-  int get_state(int i){
-    if(!i) return pacman.get_state();
-    return enemies[i - 1]->get_state();
-  }
-  bool get_is_stop(int i){
-    if(!i) return pacman.is_stop();
-    return enemies[i - 1]->is_stop();
-  }
-  //frightened_modeの制限時間
-  double get_limit_time(int i){
-    if(!i) return inf;
-    if(enemies[i - 1]->get_state() == frightened)
-      return frightened_time - (adjust_time - frightened_start_time);
-    return inf;
-  }
-  int get_eat_num(){
-    return eat_num;
-  }
-  bool get_is_game_over(){
-    return gameover;
-  }
-};
+
+int update_frame(double time, int r){
+  return update(time, r);
+}
+void start_game(){
+  start();
+}
+int get_field_value(int y, int x){
+  return get_field_val(y, x);
+}
+
+//pacman, red,blue,orange,pink = 0,1,2,3,4
+//現在の位置を出力する
+int get_posy(int i){
+  if(!i) return pacman.get_y();
+  return enemies[i - 1]->get_y();
+}
+int get_posx(int i){
+  if(!i) return pacman.get_x();
+  return enemies[i - 1]->get_x();
+}
+int get_rot(int i){
+  if(!i) return pacman.get_r();
+  return enemies[i - 1]->get_r();
+}
+int get_state(int i){
+  if(!i) return pacman.get_state();
+  return enemies[i - 1]->get_state();
+}
+bool get_is_stop(int i){
+  if(!i) return pacman.is_stop();
+  return enemies[i - 1]->is_stop();
+}
+//frightened_modeの制限時間
+double get_limit_time(int i){
+  if(!i) return inf;
+  if(enemies[i - 1]->get_state() == frightened)
+    return frightened_time - (adjust_time - frightened_start_time);
+  return inf;
+}
+int get_eat_num(){
+  return eat_num;
+}
+bool get_is_game_over(){
+  return gameover;
+}
+
+} // namespace Python

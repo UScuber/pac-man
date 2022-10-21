@@ -4,11 +4,11 @@ cdef extern from "game.hpp":
   cdef int height
   cdef int width
   cdef int size
-  cdef int get_field_val(int y, int x)
-  cdef int update(double time, int r)
-  cdef void start()
 
 cdef extern from "game.hpp" namespace "Python":
+  cdef int update_frame(double time, int r)
+  cdef void start_game()
+  cdef int get_field_value(int y, int x)
   cdef int get_posy(int i)
   cdef int get_posx(int i)
   cdef int get_rot(int i)
@@ -25,13 +25,13 @@ w = width
 sizec = size #cppでの1blockの大きさ
 
 def get_field(y: int, x: int):
-  return get_field_val(y, x)
+  return get_field_value(y, x)
 
-def update_pos(time: double, r):
-  return update(time, r)
+def update_pos(time: double, r: int):
+  return update_frame(time, r)
 
 def start_move():
-  start()
+  start_game()
 
 def get_xyrs(i: int):
   return get_posx(i), get_posy(i), get_rot(i), get_state(i)
