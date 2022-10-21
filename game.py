@@ -24,28 +24,19 @@ STATES_NUM = 5
 NORMAL, EATEN, FRIGHTENED, SCORE, FLASH = range(STATES_NUM)
 images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(OBJECTS))] for _ in range(STATES_NUM)]
 ispress_key = [False] * 4
+last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
 
 #キーボードからの入力
 def press_key(event):
+  global last_pressed_key
   key_state = event.keysym
   for i in range(len(KEY_NAME)):
     if key_state == KEY_NAME[i]:
       if i & 1:
         cpp.start_move() #動作の開始
       ispress_key[i] = True
-
-def release_key(event):
-  key_state = event.keysym
-  for i in range(len(KEY_NAME)):
-    if key_state == KEY_NAME[i]:
-      ispress_key[i] = False
-
-def key_state():
-  for i in range(len(ispress_key)):
-    if ispress_key[i] == True:
-      return i
-  return len(ispress_key)
+      last_pressed_key = i
 
 #画像の位置や向きなどの更新
 def update_images():
@@ -84,8 +75,7 @@ def update():
   clock = pygame.time.Clock()
   while True:
     clock.tick(FRAME)
-    st = key_state() #keyboard
-    res = cpp.update_pos(time.time() - start, st)
+    res = cpp.update_pos(time.time() - start, last_pressed_key)
     delete_coin(res)
     if cnt % FLIP_FREQ == 0:  flip ^= 1
 
@@ -159,7 +149,6 @@ def main():
 
 
   root.bind("<KeyPress>", press_key)
-  root.bind("<KeyRelease>", release_key)
   canvas.pack()
 
 
