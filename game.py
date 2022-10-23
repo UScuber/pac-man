@@ -107,25 +107,7 @@ def read_all_images():
         img_name = "images/frightened/"+"1"+str(k)+".png"
         images[FLASH][i][j][k] = tk.PhotoImage(file= img_name)
 
-#ウィンドウの作成
-def main():
-  global canvas
-
-  root = tk.Tk()
-  #root.geometry("300x300")
-  root.title("Pac-Man")
-  canvas = tk.Canvas(root, width=500, height=560, bg="black")
-
-  #boardに画像を取り込む
-  img_name = "images/board.png"
-  board = tk.PhotoImage(file= img_name)
-  canvas.create_image(250, 280, image= board)
-
-
-  read_all_images()
-
-  #coinを描画
-  coins = [] #一時保存用
+def draw_all_coins(coins):
   for i in range(cpp.h):
     for j in range(cpp.w):
       t = cpp.get_field(i, j)
@@ -140,6 +122,30 @@ def main():
       coins.append(tk.PhotoImage(file= file_name))
       tag = "coin" + str(i*cpp.w + j)
       canvas.create_image((j+1)*SIZE + 5, (i+1)*SIZE + 9, image= coins[-1], tag= tag)
+
+
+#ウィンドウの作成
+def main():
+  global canvas
+
+  root = tk.Tk()
+  #root.geometry("300x300")
+  root.title("Pac-Man")
+  canvas = tk.Canvas(root, width=500, height=560, bg="black")
+
+  cpp.reset()
+
+  #boardに画像を取り込む
+  img_name = "images/board.png"
+  board = tk.PhotoImage(file= img_name)
+  canvas.create_image(250, 280, image= board)
+
+
+  read_all_images()
+
+  #coinを描画
+  coins = [] #一時保存用
+  draw_all_coins(coins)
 
   #pacman,enemiesを描画
   for i in [0,4,3,2,1]: #画像の奥行を設定

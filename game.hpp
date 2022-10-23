@@ -86,7 +86,7 @@ constexpr int time_table[] = { //chase,scatter modeを変える時間[s]
 };
 
 //フィールドの初期状態
-int field[height][width] = {
+constexpr int first_field_board[height][width] = {
   { wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall },
   { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
   { wall,dots,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,dots,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,dots,wall },
@@ -119,9 +119,10 @@ int field[height][width] = {
   { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
   { wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall },
 };
+int field[height][width];
 
 //enemyが入れないところ{y, x, r}
-std::set<std::tuple<int,int,int>> isgate{
+const std::set<std::tuple<int,int,int>> isgate{
   { 12,13,D }, { 12,14,D }, //敵の出入り口
   { 10,12,U }, { 10,15,U }, //上
   { 22,12,U }, { 22,15,U }, //下
@@ -473,6 +474,32 @@ void start(){
   for(auto &enem : enemies) enem->start();
   started = true;
 }
+
+// 盤面の初期化
+void reset(){
+  printf("reset\n");
+  pacman = Position(pac_pos_y, pac_pos_x, L);
+  red_enemy = Position(red_pos_y*size, red_pos_x*size, U);
+  blue_enemy = Position(blue_pos_y*size, blue_pos_x*size, U);
+  oran_enemy = Position(oran_pos_y*size, oran_pos_x*size, U);
+  pink_enemy = Position(pink_pos_y*size, pink_pos_x*size, U);
+  memcpy(field, first_field_board, sizeof(field));
+
+  chase_mode = true;
+  gameover = false;
+
+  wait_cnt = 0;
+  eat_num = 0;
+  adjust_time = 0;
+  frightened_start_time = -1;
+  current_time = 0;
+
+  last_y = 0, last_x = 0;
+  is_ate_dots = false;
+  started = false;
+  cur_table_pos = 0;
+}
+
 //Pythonから毎フレーム呼び出される
 //rはキーボードから受け付けた方向
 int update(const double time, const int r){
@@ -548,6 +575,9 @@ int update_frame(double time, int r){
 }
 void start_game(){
   start();
+}
+void reset_game(){
+  reset();
 }
 int get_field_value(int y, int x){
   return get_field_val(y, x);
