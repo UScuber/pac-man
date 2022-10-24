@@ -1,48 +1,52 @@
 #include <iostream>
+#include <vector>
 #include <cassert>
 #include <set>
 #include <tuple>
 #include <time.h>
 
-//ブロックの数（縦、横）
+// ブロックの数(縦、横)
 constexpr int height = 31;
 constexpr int width = 28;
 
-constexpr int size = 6000; //1blockの大きさ
-constexpr int normal_spd = 880; //初期状態の速さ90%
-constexpr int slow_spd = 440; //低速時の速さ
-constexpr int high_spd = 2200; //高速時の速さ(巣に戻るとき)
+constexpr int size = 6000; // 1blockの大きさ
+constexpr int normal_spd = 880; // 初期状態の速さ90%
+constexpr int slow_spd = 440; // 低速時の速さ
+constexpr int high_spd = 2200; // 高速時の速さ(巣に戻るとき)
 
 constexpr int pac_pos_y = 23*size, pac_pos_x = 13*size+size/2;
 constexpr int red_pos_y = 11, red_pos_x = 13;
 constexpr int blue_pos_y = 11, blue_pos_x = 13;
 constexpr int oran_pos_y = 11, oran_pos_x = 13;
 constexpr int pink_pos_y = 11, pink_pos_x = 13;
-//食べられた時に戻る場所
+// 食べられた時に戻る場所
 constexpr int nest_pos_y = 11, nest_pos_x = 13;
 
 constexpr int corner_cut = 2200;
+constexpr int enemies_num = 4;
 
-//frightened_modeが終了する何秒[s]前から点滅させるか
+// frightened_modeが終了する何秒[s]前から点滅させるか
 constexpr double frightened_limit_time = 9*0.25;
-//frightened_modeの制限時間[s]
+// frightened_modeの制限時間[s]
 constexpr double frightened_time = 6 + frightened_limit_time;
-constexpr int eat_cnt = 35; //食べたときに止まるフレーム数
+// 食べたときに止まるフレーム数
+constexpr int eat_cnt = 35;
 
 constexpr int dots_all_num = 244;
 
 constexpr int inf = 1000000000;
 enum {
-  none, wall, //黒、壁
-  pac, //Pac-Man
-  red, blue, orange, pink, //enemies
+  none, wall, // 黒、壁
+  pac, // Pac-Man
+  red, blue, orange, pink, // enemies
   dots, DOTS
 };
 //敵の状態
 enum {
-  normal,
-  eaten,
-  frightened
+  normal, // 通常
+  eaten, // 食べられた
+  frightened, // 青色状態
+  nest // 巣の中(or出る直前まで)
 };
 // rotate
 enum { U,L,D,R };
@@ -50,8 +54,8 @@ bool chase_mode = true;
 bool gameover = false;
 
 int wait_cnt = 0;
-int eat_num = 0; //食べた数
-double adjust_time = 0; //frightenedの時の時間を引く
+int eat_num = 0; // 食べた数
+double adjust_time = 0; // frightenedの時の時間を引く
 double frightened_start_time = -1;
 double current_time = 0;
 
@@ -64,28 +68,29 @@ bool started = false;
 
 constexpr int dy[] = { -1,0,1,0 };
 constexpr int dx[] = { 0,-1,0,1 };
-//pink target
+// pink target
 constexpr int pty[] = { -4,0,4,0 };
 constexpr int ptx[] = { -4,-4,0,4 };
-//blue center
+// blue center target
 constexpr int bcy[] = { -2,0,2,0 };
 constexpr int bcx[] = { -2,-2,0,2 };
 
 
 int cur_table_pos = 0;
-constexpr int time_table[] = { //chase,scatter modeを変える時間[s]
-  0, //changed to scatter_mode
-  7, //when 7[s], changes to chase_mode
-  20 +7, //when 20+7[s], changes to scatter_mode
-  7 +20+7, //chase
-  20 +7+20+7, //scatter
-  5 +20+7+20+7, //chase
-  20 +5+20+7+20+7, //scatter
-  5 +20+5+20+7+20+7, //chase
-  inf //won't change to scatter
+// chase,scatter modeを変える時間[s]
+constexpr int time_table[] = {
+  0, // changed to scatter_mode
+  7, // when 7[s], changes to chase_mode
+  20 +7, // when 20+7[s], changes to scatter_mode
+  7 +20+7, // chase
+  20 +7+20+7, // scatter
+  5 +20+7+20+7, // chase
+  20 +5+20+7+20+7, // scatter
+  5 +20+5+20+7+20+7, // chase
+  inf // won't change to scatter
 };
 
-//フィールドの初期状態
+// フィールドの初期状態
 constexpr int first_field_board[height][width] = {
   { wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall,wall },
   { wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall,wall,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,dots,wall },
@@ -121,16 +126,16 @@ constexpr int first_field_board[height][width] = {
 };
 int field[height][width];
 
-//enemyが入れないところ{y, x, r}
+// enemyが入れないところ{y, x, r}
 const std::set<std::tuple<int,int,int>> isgate{
   { 12,13,D }, { 12,14,D }, //敵の出入り口
   { 10,12,U }, { 10,15,U }, //上
   { 22,12,U }, { 22,15,U }, //下
 };
 
-//fieldの値を取得
+// fieldの値を取得
 int get_field_val(const int y, const int x){
-  if(y == 14 && (x < 0 || x >= width)) return none; //14はワープのところ
+  if(y == 14 && (x < 0 || x >= width)) return none; // 14はワープのところ
   if(y < 0 || y >= height || x < 0 || x >= width) return wall;
   return field[y][x];
 }
@@ -142,8 +147,8 @@ constexpr int round(const int a){
   return (a + size/2) / size;
 }
 
-//direction: 0,1,2,3 = up,left,down,right
-//方向は小さいほうから優先度高め
+// direction: 0,1,2,3 = up,left,down,right
+// 方向は小さいほうから優先度高め
 struct Position {
   Position(const int y=0, const int x=0, const int r=U): y(y), x(x), rot(r){}
   int get_y() const{ return y; }
@@ -154,108 +159,105 @@ struct Position {
   int round_x() const{ return round(x); }
   bool is_stop() const{ return Stop; }
   int get_state() const{ return state; }
-  //方向をrにセット
+  // 方向をrにセット
   void rotate(const int r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
   void slow_down(){ spd = slow_spd; }
   void set_normal(){ spd = normal_spd; }
   void speed_up(){ spd = high_spd; }
-  //最大速度のt%の速度に設定
+  // 最大速度のt%の速度に設定
   void set_speed(const int t){ spd = t * 11; }
   void start(){ Stop = false; }
   void stop(){ Stop = true; }
   void set_state(const int t){ state = t; }
-  void warp(){
-    //(y,x) = (14, -2), (14, width + 2)
+  void check_warp(){
+    // (y,x) = (14, -2), (14, width + 2)
     if(y == 14*size){
       if(x < -2*size) x = (width+2)*size - (-2*size - x);
       else if(x > (width+2)*size) x = -2*size + (x - (width+2)*size);
     }
   }
-  //壁に当たった場合、残りの移動量を返す
-  int move(){
+  // 壁に当たった場合、残りの移動量を返す
+  int move_calc_rem(){
     if(is_stop()) return 0;
     const int ry = round(y);
     const int rx = round(x);
     const int ty = (ry*size - y) * dy[rot];
     const int tx = (rx*size - x) * dx[rot];
     
-    //現在の方向と同じだった場合
+    // 現在の方向と同じだった場合
     if(0 <= ty && ty < spd && 0 <= tx && tx < spd){
-      const int res = ty + tx; //動く量
+      const int res = ty + tx; // 動く量
       y += dy[rot] * res;
       x += dx[rot] * res;
       //if(get_field_val(ry+dy[rot], rx+dx[rot]) == wall) return 0;
-      return spd - res; //残りの量
+      return spd - res; // 残りの量
     }else{
-      warp();
+      check_warp();
       y += dy[rot] * spd;
       x += dx[rot] * spd;
       return 0;
     }
     return 0;
   }
-  //thisとaとの距離
+  // thisとaとの距離
   int dist(const Position &a) const{
     const int ay = a.round_y(), ax = a.round_x();
     const int ty = round_y(), tx = round_x();
     return (ay-ty)*(ay-ty) + (ax-tx)*(ax-tx);
   }
-  //thisと(y*size,x*size)との距離
+  // thisと(y*size,x*size)との距離
   int dist(const int sy, const int sx) const{
     const int ty = round_y(), tx = round_x();
     return (sy-ty)*(sy-ty) + (sx-tx)*(sx-tx);
   }
   bool isopposite(const int r) const{ return (rot + 2) % 4 == r; }
   bool ison_block() const{ return !(y % size || x % size); }
-  //ワープする所の通路にいるかどうか
+  // ワープする所の通路にいるかどうか
   bool is_intunnel() const{
-    if(y != 14*size) return false;
-    const int d = abs(14*size - x); //フィールドの中心からのx軸方向の距離
-    return 9*size <= d;
+    if(y != size*14) return false;
+    const int d = abs(size*14 - x); // フィールドの中心からのx軸方向の距離
+    return size*9 <= d;
   }
-  //パックマンと触れたか判定する
-  bool is_touch();
+  // パックマンと触れたか判定する
+  virtual bool is_touch(){ return false; }
   void change_direction(const Position &target, int dir);
-  private:
+  //virtual void init() = 0;
+private:
   int y,x,rot;
   int spd = normal_spd;
   int state = normal;
+  int cornering = 0; // pac-manのcorneringで進む量
   bool Stop = true;
 };
-Position pacman(pac_pos_y, pac_pos_x, L);
-Position red_enemy(red_pos_y*size, red_pos_x*size, U);
-Position blue_enemy(blue_pos_y*size, blue_pos_x*size, U);
-Position oran_enemy(oran_pos_y*size, oran_pos_x*size, U);
-Position pink_enemy(pink_pos_y*size, pink_pos_x*size, U);
 
-Position *enemies[] = { &red_enemy, &blue_enemy, &oran_enemy, &pink_enemy };
-//方向転換、次に移動すべき回転場所を返す
+
+// 方向転換、次に移動すべき回転場所を返す
 void Position::change_direction(const Position &target, int dir=-1){
-  int move_num = move(); //動ける量
+  int move_num = move_calc_rem() + cornering; // 動ける量
 
   if(!ison_block()) return;
 
   const int ry = round_y(), rx = round_x();
 
-  //pac-manからの方向の入力を確かめる
+  // pac-manからの方向の入力を確かめる
   if(dir != -1){
-    //入力なしの場合
+    // 入力なしの場合
     if(dir >= 4) dir = rot;
 
-    int ny = ry + dy[dir];
-    int nx = rx + dx[dir];
+    const int ny = ry + dy[dir];
+    const int nx = rx + dx[dir];
     if(get_field_val(ny, nx) == wall){
       if(get_field_val(ry+dy[rot], rx+dx[rot]) != wall) dir = rot;
       else return;
     }
-    if(dir == 2 && ny == 12 && (nx==13 || nx==14)){ //敵の出入り口
+    if(dir == 2 && ny == 12 && (nx==13 || nx==14)){ // 敵の出入り口
       if(dir == rot) return;
       else dir = rot;
     }
     if(dir != rot) move_num += corner_cut;
   }
-  //frightened_modeの時はランダム
+  // frightened_modeの時はランダム
   else if(get_state() == frightened){
     while(true){
       dir = rand() % 4;
@@ -268,7 +270,7 @@ void Position::change_direction(const Position &target, int dir=-1){
       break;
     }
   }
-  //eaten_mode 巣に戻った時
+  // eaten_mode 巣に戻った時
   else if(get_state() == eaten && ry == nest_pos_y && rx == nest_pos_x){
     rotate(2);
     set_state(normal);
@@ -295,322 +297,393 @@ void Position::change_direction(const Position &target, int dir=-1){
 
   if(dir == -1) printf("dir_error ");
 
-  //進行方向がwall
+  // 進行方向がwall
   if(get_field_val(ry+dy[dir], rx+dx[dir]) == wall){
     return;
   }
   rotate(dir);
 
-  //残りの分を動かす
+  // 残りの分を動かす
   y += dy[rot] * move_num;
   x += dx[rot] * move_num;
 }
 
-void change_to_eaten(){
-  wait_cnt = eat_cnt;
-  pacman.stop();
-  //戻る途中でなければ動作を一時的に止める
-  for(auto &enem : enemies){
-    if(enem->get_state() != eaten){
-      enem->stop();
-      printf("stopped ");
+
+struct PacMan : public Position {
+  PacMan(const int x, const int y, const int r) : Position(x, y, r){}
+};
+
+struct Enemy : public Position {
+  Enemy(const int x, const int y, const int r, const PacMan &pm) : Position(x, y, r), pacman(pm){}
+  bool is_touch() override {
+    /*
+    if(dist(pacman) || get_state() == eaten) return false;
+    if(get_state() == normal){
+      gameover = true;
+      printf("gameover!\n");
+    }else if(get_state() == frightened){
+      // stop, eaten_modeにする
+      stop();
+      set_state(eaten);
+      change_to_eaten();
     }
+    return true;
+    */
+    return !(dist(pacman) || get_state() == eaten);
   }
-  eat_num++;
-}
+  virtual void move() = 0;
+protected:
+  const PacMan &pacman;
+};
 
-void change_all_speed(){
-  //enemies
-  bool c[4] = {};
+struct RedEnemy : public Enemy {
+  static constexpr int red_pos_y = 11, red_pos_x = 13;
+  RedEnemy(const PacMan &pm) : Enemy(red_pos_y*size, red_pos_x*size, U, pm){}
+  void move() override {
+    Position target(-4*size, (width-3)*size); // scatter
+    if(get_state() == eaten) // eaten
+      target = Position(nest_pos_y*size, nest_pos_x*size);
+    else if(chase_mode) // chase
+      target = pacman;
 
-  if(dots_remain_num <= 10){ //elroy2 dots left
-    for(int i = 0; i <= 1; i++){
-      enemies[i]->set_speed(85);
-      c[i] = true;
+    change_direction(target);
+  }
+};
+
+struct BlueEnemy : public Enemy {
+  static constexpr int blue_pos_y = 11, blue_pos_x = 13;
+  const Enemy *red_enemy;
+  BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_pos_y*size, blue_pos_x*size, U, pm), red_enemy(red){}
+  void move() override {
+    Position target((height+1)*size, width*size); // scatter
+    if(get_state() == eaten) // eaten
+      target = Position(nest_pos_y*size, nest_pos_x*size);
+    else if(chase_mode){ // chase
+      const int r = pacman.get_r();
+      const int py = pacman.round_y() + bcy[r];
+      const int px = pacman.round_x() + bcx[r];
+
+      const int ty = 2*py - red_enemy->round_y();
+      const int tx = 2*px - red_enemy->round_x();
+      target = Position(ty*size, tx*size);
     }
-  }else if(dots_remain_num <= 20){ //elroy1 dots left
-    for(int i = 0; i <= 1; i++){
-      enemies[i]->set_speed(80);
-      c[i] = true;
+    change_direction(target);
+  }
+};
+
+struct PinkEnemy : public Enemy {
+  static constexpr int pink_pos_y = 11, pink_pos_x = 13;
+  PinkEnemy(const PacMan &pm) : Enemy(oran_pos_y*size, oran_pos_x*size, U, pm){}
+  void move() override {
+    Position target(-4*size, 2*size); // scatter
+    if(get_state() == eaten) // eaten
+      target = Position(nest_pos_y*size, nest_pos_x*size);
+    else if(chase_mode){ // chase
+      const int r = pacman.get_r();
+      const int py = pacman.round_y() + pty[r];
+      const int px = pacman.round_x() + ptx[r];
+      target = Position(py*size, px*size);
     }
+    change_direction(target);
   }
+};
 
-  for(int i = 0; i < 4; i++){
-    if(enemies[i]->get_state() == eaten) enemies[i]->set_speed(200); //check
-    else if(enemies[i]->is_intunnel()) enemies[i]->set_speed(40);
-    else if(enemies[i]->get_state() == frightened) enemies[i]->set_speed(50);
-    else if(enemies[i]->get_state() == normal && !c[i]) enemies[i]->set_speed(75);
-  }
+struct OrangeEnemy : public Enemy {
+  static constexpr int oran_pos_y = 11, oran_pos_x = 13;
+  OrangeEnemy(const PacMan &pm) : Enemy(pink_pos_y*size, pink_pos_x*size, U, pm){}
+  void move() override {
+    static constexpr int max_dist = 8 * 8; // 最大距離の2乗
+    Position target((height+1)*size, 0); // scatter
+    const int d = dist(pacman);
 
-  //pacman
-  //frightened_modeの場合
-  if(frightened_start_time != -1){
-    if(is_ate_dots) pacman.set_speed(79);
-    else pacman.set_speed(90);
-  }else{
-    if(is_ate_dots) pacman.set_speed(71);
-    else pacman.set_speed(80);
-  }
-}
-
-bool Position::is_touch(){
-  if(dist(pacman) || get_state() == eaten) return false;
-  if(get_state() == normal){
-    gameover = true;
-    printf("gameover!\n");
-  }else if(get_state() == frightened){
-    //stop, eaten_modeにする
-    stop(); set_state(eaten);
-    change_to_eaten();
-  }
-  return true;
-}
-
-void set_state_enemies(const int st){
-  for(auto &enem : enemies){
-    if(enem->get_state() != eaten)
-      enem->set_state(st);
-  }
-}
-
-//モード切替時に敵の進行方向を逆にする
-void reverse_enemies(){
-  for(auto &enem : enemies){
-    enem->reverse();
-  }
-}
-
-void red_move(){
-  Position target(-4*size, (width-3)*size); //scatter
-  if(red_enemy.get_state() == eaten) //eaten
-    target = Position(nest_pos_y*size, nest_pos_x*size);
-  else if(chase_mode) //chase
-    target = pacman;
-
-  red_enemy.change_direction(target);
-}
-
-void blue_move(){
-  Position target((height+1)*size, width*size); //scatter
-  if(blue_enemy.get_state() == eaten) //eaten
-    target = Position(nest_pos_y*size, nest_pos_x*size);
-  else if(chase_mode){ //chase
-    const int r = pacman.get_r();
-    const int py = pacman.round_y() + bcy[r];
-    const int px = pacman.round_x() + bcx[r];
-
-    const int ty = 2*py - red_enemy.round_y();
-    const int tx = 2*px - red_enemy.round_x();
-    target = Position(ty*size, tx*size);
-  }
-  blue_enemy.change_direction(target);
-}
-
-void oran_move(){
-  static constexpr int max_dist = 8 * 8; //最大距離の2乗
-  Position target((height+1)*size, 0); //scatter
-  const int d = pacman.dist(oran_enemy);
-
-  if(oran_enemy.get_state() == eaten) //eaten
-    target = Position(nest_pos_y*size, nest_pos_x*size);
-  else if(d >= max_dist && chase_mode) //chase
-    target = pacman;
-  
-  oran_enemy.change_direction(target);
-}
-
-void pink_move(){
-  Position target(-4*size, 2*size); //scatter
-  if(pink_enemy.get_state() == eaten) //eaten
-    target = Position(nest_pos_y*size, nest_pos_x*size);
-  else if(chase_mode){ //chase
-    const int r = pacman.get_r();
-    const int py = pacman.round_y() + pty[r];
-    const int px = pacman.round_x() + ptx[r];
-    target = Position(py*size, px*size);
-  }
-  pink_enemy.change_direction(target);
-}
-
-//scatter <=> chase
-void change_scmode(){
-  chase_mode ^= true;
-  if(chase_mode) printf("changed to chase mode\n");
-  else printf("changed to scatter mode\n");
-  reverse_enemies();
-  cur_table_pos++;
-}
-
-void start_frightened_mode(const double time){
-  set_state_enemies(frightened);
-  //adjust_timeを増やして時間を止めるため、adjust_timeを保存
-  frightened_start_time = adjust_time;
-  eat_num = 0;
-  reverse_enemies();
-  printf("changed to frightened mode\n");
-}
-
-void end_frightened_mode(){
-  frightened_start_time = -1;
-  set_state_enemies(normal);
-  eat_num = 0;
-  printf("return to normal mode\n");
-}
-//1フレームだけ進める
-void move_all(const int r){
-  red_move();
-  blue_move();
-  oran_move();
-  pink_move();
-
-  pacman.change_direction(Position(), r);
-}
-
-//Pythonから呼び出される
-void start(){
-  if(started) return;
-  //ここより下は開始の時だけ実行されるようにする
-  pacman.start();
-  for(auto &enem : enemies) enem->start();
-  started = true;
-}
-
-// 盤面の初期化
-void reset(){
-  printf("reset\n");
-  pacman = Position(pac_pos_y, pac_pos_x, L);
-  red_enemy = Position(red_pos_y*size, red_pos_x*size, U);
-  blue_enemy = Position(blue_pos_y*size, blue_pos_x*size, U);
-  oran_enemy = Position(oran_pos_y*size, oran_pos_x*size, U);
-  pink_enemy = Position(pink_pos_y*size, pink_pos_x*size, U);
-  memcpy(field, first_field_board, sizeof(field));
-
-  chase_mode = true;
-  gameover = false;
-
-  wait_cnt = 0;
-  eat_num = 0;
-  adjust_time = 0;
-  frightened_start_time = -1;
-  current_time = 0;
-
-  last_y = 0, last_x = 0;
-  is_ate_dots = false;
-  started = false;
-  cur_table_pos = 0;
-}
-
-//Pythonから毎フレーム呼び出される
-//rはキーボードから受け付けた方向
-int update(const double time, const int r){
-  if(!started){
-    current_time = time;
-    adjust_time = time;
-    return -1;
-  }
-
-  const double dt = time - current_time;
-  current_time = time;
-
-  if(frightened_start_time != -1){
-    adjust_time += dt;
-    //frightened_modeが終わったときor全部食べた時
-    if(adjust_time - frightened_start_time >= frightened_time){
-      end_frightened_mode();
-    }
-  }
-  //時間になったらモードの変更をする
-  else if(time - adjust_time >= time_table[cur_table_pos]){
-    change_scmode();
-  }
-
-  move_all(r);
-
-  int res = -1;
-  const int y = pacman.round_y();
-  const int x = pacman.round_x();
-  if(last_y != y || last_x != x) is_ate_dots = false;
-  last_y = y; last_x = x;
-  //dotsを取った時の処理
-  const int v = get_field_val(y, x);
-  if(v == dots || v == DOTS){
-    set_field_val(y, x, none);
-    res = y*width + x;
-    dots_remain_num--;
-    is_ate_dots = true;
-    if(v == DOTS) start_frightened_mode(time);
-    if(dots_remain_num == 0){
-      //ステージクリア
-      printf("cleared!!!\n");
-    }
-  }
-
-  if(wait_cnt){
-    wait_cnt--;
-    //時間を停止する
-    frightened_start_time += dt;
-  }else{
-    pacman.start();
-    for(auto &enem : enemies)
-      enem->start();
+    if(get_state() == eaten) // eaten
+      target = Position(nest_pos_y*size, nest_pos_x*size);
+    else if(d >= max_dist && chase_mode) // chase
+      target = pacman;
     
-    if(frightened_start_time != -1 && eat_num == 4){
-      end_frightened_mode();
-    }
+    change_direction(target);
+  }
+};
 
-    for(auto &enem : enemies){
-      if(enem->is_touch()) return res;
+struct Game {
+  Game() : pacman(pac_pos_y, pac_pos_x, L){
+    enemies[0] = new RedEnemy(pacman);
+    enemies[1] = new BlueEnemy(pacman, enemies[0]);
+    enemies[2] = new PinkEnemy(pacman);
+    enemies[3] = new OrangeEnemy(pacman);
+  }
+  ~Game(){
+    for(int i = 0; i < 4; i++){
+      delete enemies[i];
     }
   }
-  change_all_speed();
+  void start(){
+    if(started) return;
 
-  return res;
-}
+    pacman.start();
+    for(auto &enem : enemies) enem->start();
+    started = true;
+  }
+  void reset(){
+    printf("reset\n");
+    this->~Game();
+    pacman = PacMan(pac_pos_y, pac_pos_x, L);
+    enemies[0] = new RedEnemy(pacman);
+    enemies[1] = new BlueEnemy(pacman, enemies[0]);
+    enemies[2] = new PinkEnemy(pacman);
+    enemies[3] = new OrangeEnemy(pacman);
+    memcpy(field, first_field_board, sizeof(field));
+
+    chase_mode = true;
+    gameover = false;
+
+    wait_cnt = 0;
+    eat_num = 0;
+    adjust_time = 0;
+    frightened_start_time = -1;
+    current_time = 0;
+
+    last_y = 0, last_x = 0;
+    is_ate_dots = false;
+    started = false;
+    cur_table_pos = 0;
+  }
+private:
+  void change_to_eaten(){
+    wait_cnt = eat_cnt;
+    pacman.stop();
+    for(auto &enem : enemies){
+      if(enem->get_state() != eaten){
+        enem->stop();
+        printf("stopped ");
+      }
+    }
+    eat_num++;
+  }
+  void change_all_speed(){
+    // enemies
+    bool c[4] = {};
+
+    if(dots_remain_num <= 10){ // elroy2 dots left
+      for(int i = 0; i <= 1; i++){
+        enemies[i]->set_speed(85);
+        c[i] = true;
+      }
+    }else if(dots_remain_num <= 20){ // elroy1 dots left
+      for(int i = 0; i <= 1; i++){
+        enemies[i]->set_speed(80);
+        c[i] = true;
+      }
+    }
+
+    for(int i = 0; i < 4; i++){
+      if(enemies[i]->get_state() == eaten) enemies[i]->set_speed(200); // check
+      else if(enemies[i]->is_intunnel()) enemies[i]->set_speed(40);
+      else if(enemies[i]->get_state() == frightened) enemies[i]->set_speed(50);
+      else if(enemies[i]->get_state() == normal && !c[i]) enemies[i]->set_speed(75);
+    }
+
+    // pacman
+    // frightened_modeの場合
+    if(frightened_start_time != -1){
+      if(is_ate_dots) pacman.set_speed(79);
+      else pacman.set_speed(90);
+    }else{
+      if(is_ate_dots) pacman.set_speed(71);
+      else pacman.set_speed(80);
+    }
+  }
+  bool check_is_touch(){
+    for(auto &enem : enemies){
+      if(enem->is_touch()){
+        if(enem->get_state() == normal){
+          gameover = true;
+          printf("gameover!\n");
+        }
+        else if(enem->get_state() == frightened){
+          // stop, eaten_modeにする
+          enem->stop();
+          enem->set_state(eaten);
+          change_to_eaten();
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+  void set_state_enemies(const int st) const{
+    for(auto &enem : enemies){
+      if(enem->get_state() != eaten) enem->set_state(st);
+    }
+  }
+  void reverse_enemies() const{
+    for(auto &enem : enemies){
+      enem->reverse();
+    }
+  }
+  // scatter <=> chase
+  void change_scmode(){
+    chase_mode ^= true;
+    if(chase_mode) printf("changed to chase mode\n");
+    else printf("changed to scatter mode\n");
+    reverse_enemies();
+    cur_table_pos++;
+  }
+  void start_frightened_mode(const double time){
+    set_state_enemies(frightened);
+    // adjust_timeを増やして時間を止めるため、adjust_timeを保存
+    frightened_start_time = adjust_time;
+    eat_num = 0;
+    reverse_enemies();
+    printf("changed to frightened mode\n");
+  }
+  void end_frightened_mode(){
+    frightened_start_time = -1;
+    set_state_enemies(normal);
+    eat_num = 0;
+    printf("return to normal mode\n");
+  }
+  void move_all(const int r){
+    for(auto &enem : enemies){
+      enem->move();
+    }
+    pacman.change_direction(Position(), r);
+  }
+public:
+  // Pythonから毎フレーム呼び出される
+  // rはキーボードから受け付けた方向
+  int update(const double time, const int r){
+    if(!started){
+      current_time = time;
+      adjust_time = time;
+      return -1;
+    }
+
+    const double dt = time - current_time;
+    current_time = time;
+
+    if(frightened_start_time != -1){
+      adjust_time += dt;
+      // frightened_modeが終わったときor全部食べた時
+      if(adjust_time - frightened_start_time >= frightened_time){
+        end_frightened_mode();
+      }
+    }
+    // 時間になったらモードの変更をする
+    else if(time - adjust_time >= time_table[cur_table_pos]){
+      change_scmode();
+    }
+
+    move_all(r);
+
+    int res = -1;
+    const int y = pacman.round_y();
+    const int x = pacman.round_x();
+    if(last_y != y || last_x != x) is_ate_dots = false;
+    last_y = y; last_x = x;
+    // dotsを取った時の処理
+    const int v = get_field_val(y, x);
+    if(v == dots || v == DOTS){
+      set_field_val(y, x, none);
+      res = y*width + x;
+      dots_remain_num--;
+      is_ate_dots = true;
+      if(v == DOTS) start_frightened_mode(time);
+      if(dots_remain_num == 0){
+        // ステージクリア
+        printf("cleared!!!\n");
+      }
+    }
+
+    if(wait_cnt){
+      wait_cnt--;
+      // 時間を停止する
+      frightened_start_time += dt;
+    }else{
+      pacman.start();
+      for(auto &enem : enemies){
+        enem->start();
+      }
+      
+      if(frightened_start_time != -1 && eat_num == 4){
+        end_frightened_mode();
+      }
+
+      if(check_is_touch()) return res;
+    }
+    change_all_speed();
+
+    return res;
+  }
+  
+  // pacman, red,blue,orange,pink = 0,1,2,3,4
+  int get_posy(const int i) const{
+    if(!i) return pacman.get_y();
+    return enemies[i - 1]->get_y();
+  }
+  int get_posx(const int i) const{
+    if(!i) return pacman.get_x();
+    return enemies[i - 1]->get_x();
+  }
+  int get_rot(const int i) const{
+    if(!i) return pacman.get_r();
+    return enemies[i - 1]->get_r();
+  }
+  int get_state(const int i) const{
+    if(!i) return pacman.get_state();
+    return enemies[i - 1]->get_state();
+  }
+  bool get_is_stop(const int i) const{
+    if(!i) return pacman.is_stop();
+    return enemies[i - 1]->is_stop();
+  }
+  double calc_frightened_limit_time(const int i) const{
+    if(!i || enemies[i - 1]->get_state() != frightened) return inf;
+    return frightened_time - (adjust_time - frightened_start_time);
+  }
+private:
+  Enemy *enemies[enemies_num];
+  PacMan pacman;
+  bool started = false;
+};
+
+Game game;
 
 
 namespace Python {
 
 int update_frame(double time, int r){
-  return update(time, r);
+  return game.update(time, r);
 }
 void start_game(){
-  start();
+  game.start();
 }
 void reset_game(){
-  reset();
+  game.reset();
 }
 int get_field_value(int y, int x){
   return get_field_val(y, x);
 }
 
-//pacman, red,blue,orange,pink = 0,1,2,3,4
-//現在の位置を出力する
+// 現在の位置を出力する
 int get_posy(int i){
-  if(!i) return pacman.get_y();
-  return enemies[i - 1]->get_y();
+  return game.get_posy(i);
 }
 int get_posx(int i){
-  if(!i) return pacman.get_x();
-  return enemies[i - 1]->get_x();
+  return game.get_posx(i);
 }
 int get_rot(int i){
-  if(!i) return pacman.get_r();
-  return enemies[i - 1]->get_r();
+  return game.get_rot(i);
 }
 int get_state(int i){
-  if(!i) return pacman.get_state();
-  return enemies[i - 1]->get_state();
+  return game.get_state(i);
 }
 bool get_is_stop(int i){
-  if(!i) return pacman.is_stop();
-  return enemies[i - 1]->is_stop();
+  return game.get_is_stop(i);
 }
-//frightened_modeの制限時間
+// frightened_modeの制限時間
 double get_limit_time(int i){
-  if(!i) return inf;
-  if(enemies[i - 1]->get_state() == frightened)
-    return frightened_time - (adjust_time - frightened_start_time);
-  return inf;
+  return game.calc_frightened_limit_time(i);
 }
 int get_eat_num(){
   return eat_num;
