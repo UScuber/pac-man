@@ -9,8 +9,8 @@ with contextlib.redirect_stdout(None):
 import gamelib as cpp
 
 
-FRAME = 50 #ms 処理の更新頻度
-IMG_FRAME = 9 #ms 画像の切り替えの頻度
+FRAME = 50 #処理の更新頻度[Hz]
+IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
 FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
@@ -41,7 +41,9 @@ def press_key(event):
 #画像の位置や向きなどの更新
 def update_images():
   global canvas
+  clock = pygame.time.Clock()
   while True:
+    clock.tick(FRAME)
     for i in range(len(OBJECTS)):
       x, y, r, s = cpp.get_xyrs(i)
       if cpp.get_isstop(i):
@@ -56,8 +58,7 @@ def update_images():
       else:
         canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
       canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
-    
-    time.sleep(IMG_FRAME / 1000)
+
 
 #coinの消去
 def delete_coin(t):
