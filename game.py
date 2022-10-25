@@ -16,7 +16,7 @@ flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 SIZE = 17 #フィールド1blockの大きさ
 ADJ_X, ADJ_Y = 8, 12 #adjust_x,y
-OBJECTS = ["pacman", "red", "blue", "orange", "pink"]
+OBJECTS = ["pacman", "red", "blue", "pink", "orange"]
 DIREC_NAME = ["up", "left", "down", "right"]
 #all of images
 #images[i]: normal, eaten, frightened
