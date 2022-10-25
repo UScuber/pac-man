@@ -15,8 +15,8 @@ FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 SIZE = 17 #フィールド1blockの大きさ
-ADJ_X, ADJ_Y = 8, 12 #adjust_x,y
-OBJECTS = ["pacman", "red", "blue", "pink", "orange"]
+ADJ_X, ADJ_Y = 9, 59 #adjust_x,y
+OBJECTS = ["pacman", "red", "blue", "orange", "pink"]
 DIREC_NAME = ["up", "left", "down", "right"]
 #all of images
 #images[i]: normal, eaten, frightened
@@ -31,6 +31,9 @@ KEY_NAME = ["Up", "Left", "Down", "Right"]
 def press_key(event):
   global last_pressed_key
   key_state = event.keysym
+  if key_state == "Escape":
+    print("pause")
+  
   for i in range(len(KEY_NAME)):
     if key_state == KEY_NAME[i]:
       if i & 1:
@@ -122,7 +125,7 @@ def draw_all_coins(coins):
       else: continue
       coins.append(tk.PhotoImage(file= file_name))
       tag = "coin" + str(i*cpp.w + j)
-      canvas.create_image((j+1)*SIZE + 5, (i+1)*SIZE + 9, image= coins[-1], tag= tag)
+      canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image= coins[-1], tag= tag)
 
 
 #ウィンドウの作成
@@ -132,14 +135,14 @@ def main():
   root = tk.Tk()
   #root.geometry("300x300")
   root.title("Pac-Man")
-  canvas = tk.Canvas(root, width=500, height=560, bg="black")
+  canvas = tk.Canvas(root, width=500, height=630, bg="black")
 
   cpp.reset()
 
   #boardに画像を取り込む
-  img_name = "images/board.png"
+  img_name = "images/stage.png"
   board = tk.PhotoImage(file= img_name)
-  canvas.create_image(250, 280, image= board)
+  canvas.create_image(250, 318, image= board)
 
 
   read_all_images()
