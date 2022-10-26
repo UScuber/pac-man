@@ -87,18 +87,13 @@ def update():
   while True:
     clock.tick(FRAME)
     res = cpp.update_pos(time.time() - start, last_pressed_key)
-    if res != -1:
-      print(res)
-      if res == 645 or res == 670 or res == 85 or res == 110:
-        game_score += 50
-      else:
-        game_score += 10
-      write_score()
     delete_coin(res)
     if cnt % FLIP_FREQ == 0:  flip ^= 1
 
     sys.stdout.flush()
     cnt += 1
+    lbl_score["text"] = str(cpp.get_score()).zfill(7)
+
 
 
 def read_all_images():
@@ -141,9 +136,6 @@ def draw_all_coins(coins):
       tag = "coin" + str(i*cpp.w + j)
       canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image= coins[-1], tag= tag)
 
-def write_score():
-  global lbl_score
-  lbl_score["text"] = str(game_score).zfill(7)
 
 #ウィンドウの作成
 def main():
@@ -160,11 +152,12 @@ def main():
   img_name = "images/stage.png"
   board = tk.PhotoImage(file= img_name)
   canvas.create_image(250, 318, image= board)
+  lbl_start = tk.Label(text="READY!", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  lbl_start.place(x=252, y=362, anchor=tk.CENTER)
   lbl_score = tk.Label(text="0000000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_score.place(x=470, y=28, anchor=tk.NE)
   lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_up.place(x=70, y=28, anchor=tk.NW)
-  #lbl_score.after(100, write_score)
 
   read_all_images()
 
