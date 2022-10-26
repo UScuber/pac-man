@@ -51,9 +51,15 @@ def update_images():
       x, y, r, s = cpp.get_xyrs(i)
       if cpp.get_isstop(i):
         if s == 1: #eaten スコアの表示
-          #i,flipはどの数字でもよい
-          if cpp.eat_num() == 0: print("eat_num_error")
-          canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
+          x = (x + cpp.sizec/2) // cpp.sizec
+          y = (y + cpp.sizec/2) // cpp.sizec
+          pcx, pcy = cpp.get_xyrs(0)[:2]
+          pcx = (pcx + cpp.sizec/2) // cpp.sizec
+          pcy = (pcy + cpp.sizec/2) // cpp.sizec
+          if x == pcx and y == pcy:
+            #i,flipはどの数字でもよい
+            if cpp.eat_num() == 0: print("eat_num_error")
+            canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
         continue
       t = int(cpp.limit_time(i) * 4)
       if t <= 8 and not(t & 1): #flash
