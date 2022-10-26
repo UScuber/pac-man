@@ -11,7 +11,7 @@ import gamelib as cpp
 
 FRAME = 70 #処理の更新頻度[Hz]
 IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
-FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
+FLIP_FREQ = 10 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
 canvas = None #canvas
 SIZE = 17 #フィールド1blockの大きさ
