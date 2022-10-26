@@ -136,7 +136,7 @@ def draw_all_coins(coins):
 
 #ウィンドウの作成
 def main():
-  global canvas
+  global canvas, lbl_score, lbl_up
 
   root = tk.Tk()
   #root.geometry("300x300")
@@ -149,7 +149,10 @@ def main():
   img_name = "images/stage.png"
   board = tk.PhotoImage(file= img_name)
   canvas.create_image(250, 318, image= board)
-
+  lbl_score = tk.Label(text="0000000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  lbl_score.place(x=470, y=28, anchor=tk.NE)
+  lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  lbl_up.place(x=70, y=28, anchor=tk.NW)
 
   read_all_images()
 
