@@ -1,4 +1,3 @@
-//#include <iostream>
 #include <set>
 #include <tuple>
 #include <time.h>
@@ -10,9 +9,8 @@ constexpr int height = 31;
 constexpr int width = 28;
 
 constexpr int size = 6000; // 1blockの大きさ
-constexpr int normal_spd = 880; // 初期状態の速さ90%
-constexpr int slow_spd = 440; // 低速時の速さ
-constexpr int high_spd = 2200; // 高速時の速さ(巣に戻るとき)
+constexpr int frame_move = 8; // 1frameで動く量(1%)
+constexpr int normal_spd = frame_move * 80; // 初期状態の速さ80%
 
 constexpr int enemies_num = 4;
 
@@ -142,7 +140,6 @@ struct Position {
   int get_y() const{ return y; }
   int get_x() const{ return x; }
   int get_r() const{ return rot; }
-  int get_spd() const{ return spd; }
   int round_y() const{ return round(y); }
   int round_x() const{ return round(x); }
   bool is_stop() const{ return Stop; }
@@ -150,11 +147,8 @@ struct Position {
   // 方向をrにセット
   void rotate(const int r){ rot = r; }
   void reverse(){ rot = (rot+2) % 4; }
-  void slow_down(){ spd = slow_spd; }
-  void set_normal(){ spd = normal_spd; }
-  void speed_up(){ spd = high_spd; }
   // 最大速度のt%の速度に設定
-  void set_speed(const int t){ spd = t * 11; }
+  void set_speed(const int t){ spd = t * frame_move; }
   void start(){ Stop = false; }
   void stop(){ Stop = true; }
   void set_state(const State t){ state = t; }
@@ -263,10 +257,6 @@ struct Enemy : Position {
   bool is_touch() const{
     return !(dist(pacman) || get_state() == eaten);
   }
-  bool is_innest(const int y, const int x) const{
-    if(y == 12 && (x==13 || x==14)) return true;
-    return 13 <= y && y <= 15 && 11 <= x && x <= 16;
-  }
   // 入れないかどうか
   bool check_is_gate(const int y, const int x, const int r) const{
     if(get_state() == tonest) return false;
@@ -277,7 +267,7 @@ struct Enemy : Position {
   void change_direction(const Position &target, int dir=-1){
     int move_num = move_calc_rem(); // 動ける量
 
-    if(!ison_block()) return;
+    if(!ison_block() || move_num <= 0) return;
 
     const int ry = round_y(), rx = round_x();
     Assert(get_y() % size == 0 && get_x() % size == 0);
@@ -298,7 +288,6 @@ struct Enemy : Position {
     else if(get_state() == eaten && ry == nest_posy && rx == nest_posx){
       rotate(D);
       set_state(tonest);
-      //set_speed(45);
       if(wait_cnt) stop();
       printf("nest\n");
       return;
@@ -306,14 +295,12 @@ struct Enemy : Position {
     else if(get_state() == tonest && ry == innest_posy && rx == innest_posx){
       rotate(U);
       set_state(innest);
-      set_speed(45);
       cur_wait_time = nest_wait_time;
       printf("innest ");
       return;
     }
     else if(get_state() == innest){
       if(cur_wait_time <= 0){
-        //rotate(U);
         set_state(prepare);
         printf("start returning ");
         return;
@@ -327,19 +314,12 @@ struct Enemy : Position {
     else if(get_state() == prepare && ry == nest_posy && rx == nest_posx){
       rotate(U);
       set_state(normal);
-      set_normal();
       printf("prepare ");
       return;
     }
-
-    if(dir == -1){
+    else{
       int dist = inf;
-      int I[4] = { 0,1,2,3 };
-      if(get_state() == prepare && 0){
-        std::swap(I[0], I[1]);
-        std::swap(I[1], I[3]);
-      }
-      for(const int i : I){
+      for(int i = 0; i < 4; i++){
         const int ny = ry + dy[i];
         const int nx = rx + dx[i];
 
@@ -755,8 +735,9 @@ int get_rot(int i){
 int get_state(int i){
   if(!i) return game.get_pacman().get_state();
   const int st = game.get_enemy(i-1).get_state();
-  if(st >= tonest) return tonest;
-  return st;
+  if(st < tonest) return st;
+  if(st == tonest) return eaten;
+  return normal;
 }
 bool get_is_stop(int i){
   if(!i) return game.get_pacman().is_stop();
