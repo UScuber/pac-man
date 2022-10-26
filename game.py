@@ -88,7 +88,11 @@ def update():
     clock.tick(FRAME)
     res = cpp.update_pos(time.time() - start, last_pressed_key)
     if res != -1:
-      game_score += 10
+      print(res)
+      if res == 645 or res == 670 or res == 85 or res == 110:
+        game_score += 50
+      else:
+        game_score += 10
       write_score()
     delete_coin(res)
     if cnt % FLIP_FREQ == 0:  flip ^= 1
