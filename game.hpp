@@ -41,7 +41,7 @@ enum State {
 };
 // rotate
 enum { U,L,D,R };
-bool chase_mode = true;
+bool chase_mode = false; // 最初はscatter mode
 bool gameover = false;
 
 int wait_cnt = 0;
@@ -65,7 +65,6 @@ constexpr int bcx[] = { -2,-2,0,2 };
 int cur_table_pos = 0;
 // chase,scatter modeを変える時間[s]
 constexpr int time_table[] = {
-  0, // changed to scatter_mode
   7, // when 7[s], changes to chase_mode
   20 +7, // when 20+7[s], changes to scatter_mode
   7 +20+7, // chase
@@ -368,7 +367,7 @@ struct RedEnemy : Enemy {
   static constexpr int red_posy = 11, red_posx = 13;
   static constexpr int innest_posy = 14, innest_posx = 13;
   static constexpr double nest_wait_time = 0;
-  RedEnemy(const PacMan &pm) : Enemy(red_posy*size, red_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time){}
+  RedEnemy(const PacMan &pm) : Enemy(red_posy*size, red_posx*size+size/2, L, pm, innest_posy, innest_posx, nest_wait_time){}
   void move() override {
     Position target(-4*size, (width-3)*size); // scatter
     if(get_state() == eaten) // eaten
@@ -498,7 +497,7 @@ struct Game {
   void reset(){
     printf("reset\n");
     this->~Game();
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     pacman = PacMan();
     enemies[0] = new RedEnemy(pacman);
     enemies[1] = new BlueEnemy(pacman, enemies[0]);
@@ -557,7 +556,8 @@ private:
       else if(enemies[i]->get_state() == frightened) enemies[i]->set_speed(50);
       else if(enemies[i]->get_state() == normal && !c[i]) enemies[i]->set_speed(75);
       else if(enemies[i]->get_state() == tonest) enemies[i]->set_speed(200);
-      else if(enemies[i]->get_state() > tonest) enemies[i]->set_speed(40);
+      else if(enemies[i]->get_state() == innest) enemies[i]->set_speed(50);
+      else if(enemies[i]->get_state() == prepare) enemies[i]->set_speed(40);
     }
 
     // pacman
