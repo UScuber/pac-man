@@ -533,6 +533,7 @@ private:
       }
     }
     eat_num++;
+    score += eat_enemy_score << eat_num;
   }
   void change_all_speed(){
     // enemies
@@ -668,7 +669,12 @@ public:
       res = y*width + x;
       dots_remain_num--;
       is_ate_dots = true;
-      if(v == DOTS) start_frightened_mode(time);
+      if(v == DOTS){
+        start_frightened_mode(time);
+        score += DOT_score;
+      }else{
+        score += dot_score;
+      }
       if(dots_remain_num == 0){
         // ステージクリア
         printf("cleared!!!\n");
@@ -704,6 +710,9 @@ public:
   const PacMan &get_pacman() const{ return pacman; }
   int score;
 private:
+  static constexpr int dot_score = 10;
+  static constexpr int DOT_score = 50;
+  static constexpr int eat_enemy_score = 100; // 200の半分
   Enemy *enemies[enemies_num];
   PacMan pacman;
   bool started = false;
