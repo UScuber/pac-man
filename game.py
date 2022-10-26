@@ -9,7 +9,7 @@ with contextlib.redirect_stdout(None):
 import gamelib as cpp
 
 
-FRAME = 50 #処理の更新頻度[Hz]
+FRAME = 70 #処理の更新頻度[Hz]
 IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
 FLIP_FREQ = 4 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
@@ -154,7 +154,7 @@ def main():
   #pacman,enemiesを描画
   for i in [0,4,3,2,1]: #画像の奥行を設定
     x, y, r, s = cpp.get_xyrs(i)
-    canvas.create_image(x / cpp.sizec * SIZE + 20, y / cpp.sizec * SIZE + 24,
+    canvas.create_image(x / cpp.sizec * SIZE + 22, y / cpp.sizec * SIZE + 72,
                         image= images[s][i][r][flip], tag= OBJECTS[i])
 
 
