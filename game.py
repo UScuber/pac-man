@@ -26,6 +26,7 @@ images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(
 ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
+game_score = 0
 
 #キーボードからの入力
 def press_key(event):
@@ -76,7 +77,7 @@ def delete_coin(t):
 
 #盤面の更新
 def update():
-  global canvas, flip
+  global canvas, flip, game_score
   cnt = 0
   start = time.time()
   thread1 = threading.Thread(target= update_images)
@@ -86,6 +87,9 @@ def update():
   while True:
     clock.tick(FRAME)
     res = cpp.update_pos(time.time() - start, last_pressed_key)
+    if res != -1:
+      game_score += 10
+      write_score()
     delete_coin(res)
     if cnt % FLIP_FREQ == 0:  flip ^= 1
 
@@ -133,6 +137,9 @@ def draw_all_coins(coins):
       tag = "coin" + str(i*cpp.w + j)
       canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image= coins[-1], tag= tag)
 
+def write_score():
+  global lbl_score
+  lbl_score["text"] = str(game_score).zfill(7)
 
 #ウィンドウの作成
 def main():
@@ -153,6 +160,7 @@ def main():
   lbl_score.place(x=470, y=28, anchor=tk.NE)
   lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_up.place(x=70, y=28, anchor=tk.NW)
+  #lbl_score.after(100, write_score)
 
   read_all_images()
 
