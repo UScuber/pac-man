@@ -43,6 +43,7 @@ enum State {
 enum { U,L,D,R };
 bool chase_mode = false; // 最初はscatter mode
 bool gameover = false;
+bool game_cleared = false;
 
 int wait_cnt = 0;
 int eat_num = 0; // 食べた数
@@ -89,10 +90,10 @@ constexpr int first_field_board[height][width] = {
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall },
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,none,wall,wall,none,wall,wall,wall,wall,wall,dots,wall,wall,wall,wall,wall,wall },
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
-  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,none,none,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
-  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
-  { none,none,none,none,none,none,dots,none,none,none,wall,none,none,none,none,none,none,wall,none,none,none,dots,none,none,none,none,none,none },
-  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,none,none,none,none,none,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,none,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,wall,none,wall,none,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
+  { none,none,none,none,none,none,dots,none,none,none,wall,none,none,none,none,none,wall,wall,none,none,none,dots,none,none,none,none,none,none },
+  { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,none,wall,none,wall,none,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,none,none,none,none,none,none,none,none,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
   { wall,wall,wall,wall,wall,wall,dots,wall,wall,none,wall,wall,wall,wall,wall,wall,wall,wall,none,wall,wall,dots,wall,wall,wall,wall,wall,wall },
@@ -145,7 +146,7 @@ inline int rnd(const int l, const int r) noexcept{
 // direction: 0,1,2,3 = up,left,down,right
 // 方向は小さいほうから優先度高め
 struct Position {
-  Position(const int y=0, const int x=0, const int r=U): y(y), x(x), rot(r){}
+  Position(const int y, const int x, const int r=U): y(y), x(x), rot(r){}
   int get_y() const{ return y; }
   int get_x() const{ return x; }
   int get_r() const{ return rot; }
@@ -260,8 +261,8 @@ struct PacMan : Position {
 struct Enemy : Position {
   // 食べられた時に戻る場所
   static constexpr int nest_posy = 11, nest_posx = 13;
-  Enemy(const int x, const int y, const int r, const PacMan &pm, const int n_posy, const int n_posx, const double n_wait_time) :
-    Position(x, y, r), pacman(pm), innest_posy(n_posy), innest_posx(n_posx), nest_wait_time(n_wait_time){}
+  Enemy(const int x, const int y, const int r, const PacMan &pm, const int n_posy, const int n_posx) :
+    Position(x, y, r), pacman(pm), innest_posy(n_posy), innest_posx(n_posx), nest_wait_time(0.5){}
   // パックマンと触れたか
   bool is_touch() const{
     return !(dist(pacman) || get_state() == eaten);
@@ -269,7 +270,7 @@ struct Enemy : Position {
   // 入れないかどうか
   bool check_is_gate(const int y, const int x, const int r) const{
     if(get_state() == tonest) return false;
-    if(isgate.count({ y, x, r})) return true;
+    if(isgate.count({ y, x, r })) return true;
     return false;
   }
   // 方向転換、次に移動すべき回転場所を返す
@@ -296,8 +297,10 @@ struct Enemy : Position {
     else if(get_state() == eaten && ry == nest_posy && rx == nest_posx){
       rotate(D);
       set_state(tonest);
-      if(wait_cnt) stop();
-      printf("nest\n");
+      // 真ん中に半分だけずらす
+      adj_posx = size / 2;
+      x -= adj_posx;
+      rotate(R);
       return;
     }
     else if(get_state() == tonest && ry == innest_posy && rx == innest_posx){
@@ -307,22 +310,27 @@ struct Enemy : Position {
       return;
     }
     else if(get_state() == innest){
-      if(cur_wait_time <= 0){
+      if(cur_wait_time <= 0 && ry == 14){
         set_state(prepare);
-        rotate(U);
-        return;
+        if(rx == nest_posx) dir = U;
+        else if(rx < nest_posx) dir = R;
+        else dir = L;
+      }else{
+        // up
+        if(ry == 13) dir = D;
+        // down
+        else if(ry == 15) dir = U;
+        else dir = get_r();
       }
-      // up
-      if(ry == 13) dir = D;
-      // down
-      else if(ry == 15) dir = U;
-      else dir = get_r();
     }
     else if(get_state() == prepare && ry == nest_posy && rx == nest_posx){
       set_state(normal);
-      return;
+      // 真ん中から半分だけずらす
+      x += adj_posx;
+      adj_posx = 0;
     }
-    else{
+
+    if(dir == -1){
       int dist = inf;
       for(int i = 0; i < 4; i++){
         const int ny = ry + dy[i];
@@ -356,6 +364,7 @@ struct Enemy : Position {
     cur_wait_time -= dt;
   }
   virtual void move() = 0;
+  int adj_posx = 0; // 巣出入りするときのx座標の調整用
 protected:
   const PacMan &pacman;
   const int innest_posy, innest_posx;
@@ -366,8 +375,7 @@ protected:
 struct RedEnemy : Enemy {
   static constexpr int red_posy = 11, red_posx = 13;
   static constexpr int innest_posy = 14, innest_posx = 13;
-  static constexpr double nest_wait_time = 0;
-  RedEnemy(const PacMan &pm) : Enemy(red_posy*size, red_posx*size+size/2, L, pm, innest_posy, innest_posx, nest_wait_time){}
+  RedEnemy(const PacMan &pm) : Enemy(red_posy*size, red_posx*size+size/2, L, pm, innest_posy, innest_posx){}
   void move() override {
     Position target(-4*size, (width-3)*size); // scatter
     if(get_state() == eaten) // eaten
@@ -385,13 +393,43 @@ struct RedEnemy : Enemy {
   }
 };
 
+struct PinkEnemy : Enemy {
+  static constexpr int pink_posy = 14, pink_posx = 13;
+  static constexpr int innest_posy = 14, innest_posx = 13;
+  static constexpr double first_nest_wait_time = 1.0;
+  PinkEnemy(const PacMan &pm) : Enemy(pink_posy*size, pink_posx*size, D, pm, innest_posy, innest_posx){
+    cur_wait_time = first_nest_wait_time;
+    adj_posx = size / 2;
+    set_state(innest);
+  }
+  void move() override {
+    Position target(-4*size, 2*size); // scatter
+    if(get_state() == eaten) // eaten
+      target = Position(nest_posy*size, nest_posx*size);
+    else if(get_state() == tonest)
+      target = Position(innest_posy*size, innest_posx*size);
+    else if(get_state() == innest)
+      target = Position(innest_posy*size, innest_posx*size);
+    else if(get_state() == prepare)
+      target = Position(nest_posy*size, nest_posx*size);
+    else if(chase_mode){ // chase
+      const int r = pacman.get_r();
+      const int py = pacman.round_y() + pty[r];
+      const int px = pacman.round_x() + ptx[r];
+      target = Position(py*size, px*size);
+    }
+    change_direction(target);
+  }
+};
+
 struct BlueEnemy : Enemy {
-  static constexpr int blue_posy = 14, blue_posx = 12;
-  static constexpr int innest_posy = 14, innest_posx = 12;
-  static constexpr double nest_wait_time = 1;
+  static constexpr int blue_posy = 14, blue_posx = 12-1;
+  static constexpr int innest_posy = 14, innest_posx = 12-1;
+  static constexpr double first_nest_wait_time = 5.0;
   const Enemy *red_enemy;
-  BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_posy*size, blue_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time), red_enemy(red){
-    cur_wait_time = nest_wait_time;
+  BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_posy*size, blue_posx*size, U, pm, innest_posy, innest_posx), red_enemy(red){
+    cur_wait_time = first_nest_wait_time;
+    adj_posx = size / 2;
     set_state(innest);
   }
   void move() override {
@@ -417,41 +455,13 @@ struct BlueEnemy : Enemy {
   }
 };
 
-struct PinkEnemy : Enemy {
-  static constexpr int pink_posy = 14, pink_posx = 13;
-  static constexpr int innest_posy = 14, innest_posx = 13;
-  static constexpr double nest_wait_time = 5;
-  PinkEnemy(const PacMan &pm) : Enemy(pink_posy*size, pink_posx*size, D, pm, innest_posy, innest_posx, nest_wait_time){
-    cur_wait_time = nest_wait_time;
-    set_state(innest);
-  }
-  void move() override {
-    Position target(-4*size, 2*size); // scatter
-    if(get_state() == eaten){ // eaten
-      target = Position(nest_posy*size, nest_posx*size);
-    }
-    else if(get_state() == tonest)
-      target = Position(innest_posy*size, innest_posx*size);
-    else if(get_state() == innest)
-      target = Position(innest_posy*size, innest_posx*size);
-    else if(get_state() == prepare)
-      target = Position(nest_posy*size, nest_posx*size);
-    else if(chase_mode){ // chase
-      const int r = pacman.get_r();
-      const int py = pacman.round_y() + pty[r];
-      const int px = pacman.round_x() + ptx[r];
-      target = Position(py*size, px*size);
-    }
-    change_direction(target);
-  }
-};
-
 struct OrangeEnemy : Enemy {
   static constexpr int oran_posy = 14, oran_posx = 15;
   static constexpr int innest_posy = 14, innest_posx = 15;
-  static constexpr double nest_wait_time = 9;
-  OrangeEnemy(const PacMan &pm) : Enemy(oran_posy*size, oran_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time){
-    cur_wait_time = nest_wait_time;
+  static constexpr double first_nest_wait_time = 9.0;
+  OrangeEnemy(const PacMan &pm) : Enemy(oran_posy*size, oran_posx*size, U, pm, innest_posy, innest_posx){
+    cur_wait_time = first_nest_wait_time;
+    adj_posx = size / 2;
     set_state(innest);
   }
   void move() override {
@@ -505,8 +515,10 @@ struct Game {
     enemies[3] = new OrangeEnemy(pacman);
     memcpy(field, first_field_board, sizeof(field));
 
-    chase_mode = true;
+    chase_mode = false;
+    cur_table_pos = 0;
     gameover = false;
+    game_cleared = false;
 
     score = 0;
 
@@ -519,7 +531,6 @@ struct Game {
     last_y = 0, last_x = 0;
     is_ate_dots = false;
     started = false;
-    cur_table_pos = 0;
   }
 private:
   void change_to_eaten(){
@@ -556,7 +567,7 @@ private:
       else if(enemies[i]->get_state() == frightened) enemies[i]->set_speed(50);
       else if(enemies[i]->get_state() == normal && !c[i]) enemies[i]->set_speed(75);
       else if(enemies[i]->get_state() == tonest) enemies[i]->set_speed(200);
-      else if(enemies[i]->get_state() == innest) enemies[i]->set_speed(50);
+      else if(enemies[i]->get_state() == innest) enemies[i]->set_speed(55);
       else if(enemies[i]->get_state() == prepare) enemies[i]->set_speed(40);
     }
 
@@ -677,6 +688,7 @@ public:
       }
       if(dots_remain_num == 0){
         // ステージクリア
+        game_cleared = true;
         printf("cleared!!!\n");
       }
     }
@@ -747,7 +759,7 @@ int get_posy(int i){
 }
 int get_posx(int i){
   if(!i) return game.get_pacman().get_x();
-  return game.get_enemy(i-1).get_x();
+  return game.get_enemy(i-1).get_x() + game.get_enemy(i-1).adj_posx;
 }
 int get_rot(int i){
   if(!i) return game.get_pacman().get_r();
@@ -777,6 +789,9 @@ int get_eat_num(){
 }
 bool get_is_game_over(){
   return gameover;
+}
+bool get_is_game_cleared(){
+  return game_cleared;
 }
 
 } // namespace Python
