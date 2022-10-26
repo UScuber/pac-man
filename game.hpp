@@ -265,12 +265,11 @@ struct Enemy : Position {
   }
   // 方向転換、次に移動すべき回転場所を返す
   void change_direction(const Position &target, int dir=-1){
-    int move_num = move_calc_rem(); // 動ける量
+    const int move_num = move_calc_rem(); // 動ける量
 
     if(!ison_block() || move_num <= 0) return;
 
     const int ry = round_y(), rx = round_x();
-    Assert(get_y() % size == 0 && get_x() % size == 0);
 
     if(get_state() == frightened){
       while(true){
@@ -296,13 +295,12 @@ struct Enemy : Position {
       rotate(U);
       set_state(innest);
       cur_wait_time = nest_wait_time;
-      printf("innest ");
       return;
     }
     else if(get_state() == innest){
       if(cur_wait_time <= 0){
         set_state(prepare);
-        printf("start returning ");
+        rotate(U);
         return;
       }
       // up
@@ -312,9 +310,7 @@ struct Enemy : Position {
       else dir = get_r();
     }
     else if(get_state() == prepare && ry == nest_posy && rx == nest_posx){
-      rotate(U);
       set_state(normal);
-      printf("prepare ");
       return;
     }
     else{
@@ -354,12 +350,9 @@ struct Enemy : Position {
 protected:
   const PacMan &pacman;
   const int innest_posy, innest_posx;
-private:
   const double nest_wait_time;
   double cur_wait_time = 0;
 };
-
-Position red_target, blue_target, pink_target, orange_target;
 
 struct RedEnemy : Enemy {
   static constexpr int red_posy = 11, red_posx = 13;
@@ -380,16 +373,18 @@ struct RedEnemy : Enemy {
       target = pacman;
 
     change_direction(target);
-    red_target = target;
   }
 };
 
 struct BlueEnemy : Enemy {
-  static constexpr int blue_posy = 11, blue_posx = 13;
+  static constexpr int blue_posy = 14, blue_posx = 12;
   static constexpr int innest_posy = 14, innest_posx = 12;
   static constexpr double nest_wait_time = 1;
   const Enemy *red_enemy;
-  BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_posy*size, blue_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time), red_enemy(red){}
+  BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_posy*size, blue_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time), red_enemy(red){
+    cur_wait_time = nest_wait_time;
+    set_state(innest);
+  }
   void move() override {
     Position target((height+1)*size, width*size); // scatter
     if(get_state() == eaten) // eaten
@@ -410,15 +405,17 @@ struct BlueEnemy : Enemy {
       target = Position(ty*size, tx*size);
     }
     change_direction(target);
-    blue_target = target;
   }
 };
 
 struct PinkEnemy : Enemy {
-  static constexpr int pink_posy = 11, pink_posx = 13;
+  static constexpr int pink_posy = 14, pink_posx = 13;
   static constexpr int innest_posy = 14, innest_posx = 13;
   static constexpr double nest_wait_time = 5;
-  PinkEnemy(const PacMan &pm) : Enemy(pink_posy*size, pink_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time){}
+  PinkEnemy(const PacMan &pm) : Enemy(pink_posy*size, pink_posx*size, D, pm, innest_posy, innest_posx, nest_wait_time){
+    cur_wait_time = nest_wait_time;
+    set_state(innest);
+  }
   void move() override {
     Position target(-4*size, 2*size); // scatter
     if(get_state() == eaten){ // eaten
@@ -437,15 +434,17 @@ struct PinkEnemy : Enemy {
       target = Position(py*size, px*size);
     }
     change_direction(target);
-    pink_target = target;
   }
 };
 
 struct OrangeEnemy : Enemy {
-  static constexpr int oran_posy = 11, oran_posx = 13;
+  static constexpr int oran_posy = 14, oran_posx = 15;
   static constexpr int innest_posy = 14, innest_posx = 15;
   static constexpr double nest_wait_time = 9;
-  OrangeEnemy(const PacMan &pm) : Enemy(oran_posy*size, oran_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time){}
+  OrangeEnemy(const PacMan &pm) : Enemy(oran_posy*size, oran_posx*size, U, pm, innest_posy, innest_posx, nest_wait_time){
+    cur_wait_time = nest_wait_time;
+    set_state(innest);
+  }
   void move() override {
     static constexpr int max_dist = 8 * 8; // 最大距離の2乗
     Position target((height+1)*size, 0); // scatter
@@ -458,12 +457,11 @@ struct OrangeEnemy : Enemy {
     else if(get_state() == innest)
       target = Position(innest_posy*size, innest_posx*size);
     else if(get_state() == prepare)
-      target = Position(nest_posy*size, nest_posx*size);
+      target = Position(nest_posy*size, (nest_posx+1)*size);
     else if(d >= max_dist && chase_mode) // chase
       target = pacman;
     
     change_direction(target);
-    orange_target = target;
   }
 };
 
