@@ -133,6 +133,16 @@ constexpr int round(const int a){
   return (a + size/2) / size;
 }
 
+inline unsigned int randxor32() noexcept{
+  static unsigned int y = (unsigned int)rand() | (unsigned int)rand() << 16;
+  y = y ^ (y << 13); y = y ^ (y >> 17);
+  return y = y ^ (y << 5);
+}
+// returns random [l, r)
+inline int rnd(const int l, const int r) noexcept{
+  return randxor32() % (r - l) + l;
+}
+
 // direction: 0,1,2,3 = up,left,down,right
 // 方向は小さいほうから優先度高め
 struct Position {
@@ -211,7 +221,7 @@ protected:
 
 struct PacMan : Position {
   static constexpr int pac_pos_y = 23*size, pac_pos_x = 13*size+size/2;
-  static constexpr int corner_cut = 2700;
+  static constexpr int corner_cut = frame_move * 200;
   PacMan() : Position(pac_pos_y, pac_pos_x, L){}
   // 方向転換、次に移動すべき回転場所を返す
   void change_direction(int dir){
@@ -273,7 +283,7 @@ struct Enemy : Position {
 
     if(get_state() == frightened){
       while(true){
-        dir = rand() % 4;
+        dir = rnd(0, 4);
         const int ny = ry + dy[dir];
         const int nx = rx + dx[dir];
 
@@ -466,7 +476,7 @@ struct OrangeEnemy : Enemy {
 };
 
 struct Game {
-  Game() : pacman(){
+  Game() : pacman(), score(0){
     enemies[0] = new RedEnemy(pacman);
     enemies[1] = new BlueEnemy(pacman, enemies[0]);
     enemies[2] = new PinkEnemy(pacman);
@@ -488,6 +498,7 @@ struct Game {
   void reset(){
     printf("reset\n");
     this->~Game();
+    srand(time(NULL));
     pacman = PacMan();
     enemies[0] = new RedEnemy(pacman);
     enemies[1] = new BlueEnemy(pacman, enemies[0]);
@@ -497,6 +508,8 @@ struct Game {
 
     chase_mode = true;
     gameover = false;
+
+    score = 0;
 
     wait_cnt = 0;
     eat_num = 0;
@@ -689,6 +702,7 @@ public:
   
   const Enemy &get_enemy(const int i) const{ return *enemies[i]; }
   const PacMan &get_pacman() const{ return pacman; }
+  int score;
 private:
   Enemy *enemies[enemies_num];
   PacMan pacman;
@@ -745,6 +759,9 @@ bool get_is_stop(int i){
 double get_limit_time(int i){
   if(!i || game.get_enemy(i-1).get_state() != frightened) return inf;
   return frightened_time - (adjust_time - frightened_start_time);
+}
+int get_current_score(){
+  return game.score;
 }
 int get_eat_num(){
   return eat_num;
