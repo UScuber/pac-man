@@ -39,6 +39,8 @@ def press_key(event):
     if key_state == KEY_NAME[i]:
       if i & 1:
         cpp.start_move() #動作の開始
+        lbl_start.destroy()
+
       ispress_key[i] = True
       last_pressed_key = i
 
@@ -139,7 +141,7 @@ def draw_all_coins(coins):
 
 #ウィンドウの作成
 def main():
-  global canvas, lbl_score, lbl_up
+  global canvas, lbl_score, lbl_up, lbl_start
 
   root = tk.Tk()
   #root.geometry("300x300")
@@ -158,6 +160,7 @@ def main():
   lbl_score.place(x=470, y=28, anchor=tk.NE)
   lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_up.place(x=70, y=28, anchor=tk.NW)
+  #lbl_life = tk.Label(text="", font=("4x4極小かなフォント", 15), bg="black", image="images/pacman/right0.png")
 
   read_all_images()
 
