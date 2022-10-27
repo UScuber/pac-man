@@ -26,7 +26,7 @@ images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(
 ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
-game_score = 0
+game_up = 0
 
 #キーボードからの入力
 def press_key(event):
@@ -79,7 +79,7 @@ def delete_coin(t):
 
 #盤面の更新
 def update():
-  global canvas, flip, game_score
+  global canvas, flip, game_up
   cnt = 0
   start = time.time()
   thread1 = threading.Thread(target= update_images)
@@ -94,7 +94,13 @@ def update():
 
     sys.stdout.flush()
     cnt += 1
-    lbl_score["text"] = str(cpp.get_score()).zfill(7)
+    game_score = cpp.get_score()
+    if game_score - 100 * game_up > 100:
+      game_up += 1
+      lbl_up["text"] = str(game_up).zfill(2)
+      
+    lbl_score["text"] = str(game_score).zfill(7)
+    
 
 
 
@@ -165,7 +171,9 @@ def main():
   lbl_life = []
   for i in range(5):
     lbl_life.append(tk.Label(text="", bg="black", image=photo_life))
-    lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
+    if (i < 3):
+      lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
+
 
   read_all_images()
 
