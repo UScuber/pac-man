@@ -160,7 +160,12 @@ def main():
   lbl_score.place(x=470, y=28, anchor=tk.NE)
   lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_up.place(x=70, y=28, anchor=tk.NW)
-  #lbl_life = tk.Label(text="", font=("4x4極小かなフォント", 15), bg="black", image="images/pacman/right0.png")
+  photo_life = tk.PhotoImage(file="images/pacman/right0.png")
+  
+  lbl_life = []
+  for i in range(5):
+    lbl_life.append(tk.Label(text="", bg="black", image=photo_life))
+    lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
 
   read_all_images()
 
