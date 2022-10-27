@@ -508,13 +508,11 @@ struct Game {
   void restart(){
     printf("restart\n");
     this->~Game();
-    srand((unsigned int)time(NULL));
     pacman = PacMan();
     enemies[0] = new RedEnemy(pacman);
     enemies[1] = new BlueEnemy(pacman, enemies[0]);
     enemies[2] = new PinkEnemy(pacman);
     enemies[3] = new OrangeEnemy(pacman);
-    memcpy(field, first_field_board, sizeof(field));
 
     chase_mode = false;
     cur_table_pos = 0;
@@ -535,6 +533,8 @@ struct Game {
   void reset(){
     restart();
     printf("reset\n");
+    srand((unsigned int)time(NULL));
+    memcpy(field, first_field_board, sizeof(field));
     remain_num = 2;
     score = 0;
     dots_remain_num = dots_all_num;
