@@ -100,6 +100,11 @@ def update():
       lbl_up["text"] = str(game_up).zfill(2)
       
     lbl_score["text"] = str(game_score).zfill(7)
+    if cpp.is_game_over():
+      for i in range(5):
+        lbl_life[i].place_forget()
+      for i in range(cpp.remain_num()):
+        lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
     
 
 
@@ -147,7 +152,7 @@ def draw_all_coins(coins):
 
 #ウィンドウの作成
 def main():
-  global canvas, lbl_score, lbl_up, lbl_start
+  global canvas, lbl_score, lbl_up, lbl_start, lbl_life
 
   root = tk.Tk()
   #root.geometry("300x300")
@@ -171,7 +176,7 @@ def main():
   lbl_life = []
   for i in range(5):
     lbl_life.append(tk.Label(text="", bg="black", image=photo_life))
-    if (i < 3):
+    if i < 2:
       lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
 
 
@@ -190,7 +195,7 @@ def main():
 
   root.bind("<KeyPress>", press_key)
   canvas.pack()
-
+  
 
   #updateを別のスレッドで動かす
   thread1 = threading.Thread(target= update)
