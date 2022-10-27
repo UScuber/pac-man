@@ -8,6 +8,7 @@ cdef extern from "game.hpp":
 cdef extern from "game.hpp" namespace "Python":
   cdef int update_frame(double time, int r)
   cdef void start_game()
+  cdef void restart_game()
   cdef void reset_game()
   cdef int get_field_value(int y, int x)
   cdef int get_posy(int i)
@@ -17,6 +18,7 @@ cdef extern from "game.hpp" namespace "Python":
   cdef int get_is_stop(int i)
   cdef double get_limit_time(int i)
   cdef int get_eat_num()
+  cdef int get_remain_num()
   cdef int get_is_game_over()
   cdef int get_is_game_cleared()
   cdef int get_current_score()
@@ -36,6 +38,8 @@ def update_pos(time: double, r: int):
 def start_move():
   start_game()
 
+def restart():
+  restart_game()
 def reset():
   reset_game()
 
@@ -50,6 +54,9 @@ def get_score():
 
 def eat_num():
   return get_eat_num()
+
+def remain_num():
+  return get_remain_num()
 
 def limit_time(i: int):
   return get_limit_time(i)

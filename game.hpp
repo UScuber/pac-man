@@ -47,6 +47,7 @@ bool game_cleared = false;
 
 int wait_cnt = 0;
 int eat_num = 0; // 食べた数
+int remain_num = 2; // 残基(現在を除く)
 double adjust_time = 0; // frightenedの時の時間を引く
 double frightened_start_time = -1;
 double current_time = 0;
@@ -504,8 +505,8 @@ struct Game {
     for(auto &enem : enemies) enem->start();
     started = true;
   }
-  void reset(){
-    printf("reset\n");
+  void restart(){
+    printf("restart\n");
     this->~Game();
     srand((unsigned int)time(NULL));
     pacman = PacMan();
@@ -520,17 +521,23 @@ struct Game {
     gameover = false;
     game_cleared = false;
 
-    score = 0;
-
     wait_cnt = 0;
     eat_num = 0;
     adjust_time = 0;
     frightened_start_time = -1;
     current_time = 0;
+    remain_num--;
 
     last_y = 0, last_x = 0;
     is_ate_dots = false;
     started = false;
+  }
+  void reset(){
+    restart();
+    printf("reset\n");
+    remain_num = 2;
+    score = 0;
+    dots_remain_num = dots_all_num;
   }
 private:
   void change_to_eaten(){
@@ -744,6 +751,9 @@ int update_frame(double time, int r){
 void start_game(){
   game.start();
 }
+void restart_game(){
+  game.restart();
+}
 void reset_game(){
   game.reset();
 }
@@ -786,6 +796,9 @@ int get_current_score(){
 }
 int get_eat_num(){
   return eat_num;
+}
+int get_remain_num(){
+  return remain_num;
 }
 bool get_is_game_over(){
   return gameover;
