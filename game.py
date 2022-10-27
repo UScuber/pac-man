@@ -7,6 +7,7 @@ import contextlib
 with contextlib.redirect_stdout(None):
   import pygame
 import gamelib as cpp
+from PIL import Image, ImageTk
 
 
 FRAME = 70 #処理の更新頻度[Hz]
@@ -101,10 +102,17 @@ def update():
       
     lbl_score["text"] = str(game_score).zfill(7)
     if cpp.is_game_over():
-      for i in range(5):
-        lbl_life[i].place_forget()
+      time.sleep(1)
+      print("####"+str(cpp.remain_num()))
+      if cpp.remain_num() <= 0:
+        print("go to menu")
+        break
       for i in range(cpp.remain_num()):
+        lbl_life[i].place_forget()
+      for i in range(cpp.remain_num() - 1):
         lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
+      cpp.restart()
+
     
 
 
@@ -149,14 +157,31 @@ def draw_all_coins(coins):
       tag = "coin" + str(i*cpp.w + j)
       canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image= coins[-1], tag= tag)
 
+def switch():
+  global menu
+  menu.destroy()
+  main()
+
+def menu():
+  global root, menu
+  root = tk.Tk()
+  root.title("Pac-Man")
+  menu = tk.Canvas(root, width=500, height=630, bg="black")
+  pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
+  lbl_title = tk.Label(menu, text="PAC++ PERTHON", font=("4x4極小かなフォント", 30), fg="white", bg="black")
+  lbl_title.place(x=250, y=80, anchor=tk.CENTER)
+  lbl_manual = tk.Label(menu, text="これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", font=("Arial", 15), fg="white", bg="black")
+  lbl_manual.place(x=250, y=160, anchor=tk.CENTER)
+  lbl_start = tk.Button(menu, text="START", font=("4x4極小かなフォント", 30), fg="white", bg="black", command=switch)
+  lbl_start.place(x=250, y=561.6, anchor=tk.CENTER)
+  lbl_pac = tk.Label(menu, text="", image=pic_pac)
+  lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
+  menu.pack()
+  root.mainloop()
 
 #ウィンドウの作成
 def main():
   global canvas, lbl_score, lbl_up, lbl_start, lbl_life
-
-  root = tk.Tk()
-  #root.geometry("300x300")
-  root.title("Pac-Man")
   canvas = tk.Canvas(root, width=500, height=630, bg="black")
 
   cpp.reset()
@@ -176,8 +201,11 @@ def main():
   lbl_life = []
   for i in range(5):
     lbl_life.append(tk.Label(text="", bg="black", image=photo_life))
-    if i < 2:
-      lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
+  for i in range(5):
+    lbl_life[i].place_forget()
+  print("##################"+str(cpp.remain_num()))
+  for i in range(cpp.remain_num()):
+    lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
 
 
   read_all_images()
@@ -207,5 +235,5 @@ def main():
 
 
 if __name__ == "__main__":
-  main()
+  menu()
   sys.exit()
