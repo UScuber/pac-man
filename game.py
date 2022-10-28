@@ -29,6 +29,7 @@ last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
 game_up = 0
 msg_status = 0
+is_end = 0
 
 #キーボードからの入力
 def press_key(event):
@@ -50,7 +51,7 @@ def press_key(event):
 def update_images():
   global canvas
   clock = pygame.time.Clock()
-  while True:
+  while (is_end == 0):
     clock.tick(FRAME)
     for i in range(len(OBJECTS)):
       x, y, r, s = cpp.get_xyrs(i)
@@ -81,14 +82,14 @@ def delete_coin(t):
 
 #盤面の更新
 def update():
-  global canvas, flip, game_up
+  global canvas, flip, game_up, thread1, thread2, is_end
   cnt = 0
   start = time.time()
-  thread1 = threading.Thread(target= update_images)
-  thread1.setDaemon(True)
-  thread1.start()
+  thread2 = threading.Thread(target= update_images)
+  thread2.setDaemon(True)
+  thread2.start()
   clock = pygame.time.Clock()
-  while True:
+  while (is_end == 0):
     clock.tick(FRAME)
     res = cpp.update_pos(time.time() - start, last_pressed_key)
     delete_coin(res)
@@ -106,9 +107,10 @@ def update():
       #time.sleep(1)
       print("####"+str(cpp.remain_num()))
       if cpp.remain_num() <= 0:
-        canvas.destroy()
-        print("OK")
-        endcard()
+        is_end = 1
+        thread3 = threading.Thread(target=endcard)
+        thread3.start()
+        sys.exit()
       for i in range(cpp.remain_num()):
         lbl_life[i].place_forget()
       for i in range(cpp.remain_num() - 1):
@@ -170,6 +172,7 @@ def menu():
   global root, menu
   root = tk.Tk()
   root.title("Pac-Man")
+  root.resizable(False, False)
   menu = tk.Canvas(root, width=500, height=630, bg="black")
   pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
   lbl_title = tk.Label(menu, text="PAC++ PERTHON", font=("4x4極小かなフォント", 30), fg="white", bg="black")
@@ -189,7 +192,7 @@ def menu():
 
 #ウィンドウの作成
 def main():
-  global canvas, lbl_score, lbl_up, lbl_start, lbl_life
+  global canvas, lbl_score, lbl_up, lbl_start, lbl_life, thread1
   canvas = tk.Canvas(root, width=500, height=630, bg="black")
 
   cpp.reset()
@@ -235,7 +238,7 @@ def main():
 
   #updateを別のスレッドで動かす
   thread1 = threading.Thread(target= update)
-  thread1.setDaemon(True)
+  thread1.setDaemon(False)
   thread1.start()
 
   root.mainloop()
@@ -258,7 +261,11 @@ def endgame(event):
     sys.exit()
 
 def endcard():
-  global lbl_msg1, lbl_msg2
+  global lbl_msg1, lbl_msg2, thread1, thread2
+  thread2.join()
+  thread1.join()
+  
+  canvas.destroy()
   with open("time.txt", "r") as f:
     ranklist = f.readlines()
   for i in range(len(ranklist)):
@@ -296,6 +303,7 @@ def endcard():
   lbl_rank1.bind('<Key>', endgame)
   lbl_rank1.focus_set()
   result.pack()
+  
 
 if __name__ == "__main__":
   menu()
