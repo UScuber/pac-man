@@ -9,7 +9,6 @@ with contextlib.redirect_stdout(None):
 import gamelib as cpp
 from PIL import Image, ImageTk
 
-
 FRAME = 70 #処理の更新頻度[Hz]
 IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
 FLIP_FREQ = 10 #何フレームごとに画像を切り替えるか
@@ -27,13 +26,14 @@ images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(
 ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
-game_up = 0
 msg_status = 0
 is_end = 0
+game_time = 0
+is_first = 1
 
 #キーボードからの入力
 def press_key(event):
-  global last_pressed_key
+  global last_pressed_key, is_first
   key_state = event.keysym
   if key_state == "Escape":
     print("pause")
@@ -42,7 +42,11 @@ def press_key(event):
     if key_state == KEY_NAME[i]:
       if i & 1:
         cpp.start_move() #動作の開始
-        lbl_start.destroy()
+        
+        if is_first:
+          is_first = 0
+          lbl_time.after(1000, count_up)
+          lbl_start.destroy()
 
       ispress_key[i] = True
       last_pressed_key = i
@@ -82,7 +86,7 @@ def delete_coin(t):
 
 #盤面の更新
 def update():
-  global canvas, flip, game_up, thread1, thread2, is_end
+  global canvas, flip, thread1, thread2, is_end
   cnt = 0
   start = time.time()
   thread2 = threading.Thread(target= update_images)
@@ -98,9 +102,6 @@ def update():
     sys.stdout.flush()
     cnt += 1
     game_score = cpp.get_score()
-    if game_score - 100 * game_up > 100:
-      game_up += 1
-      lbl_up["text"] = str(game_up).zfill(2)
       
     lbl_score["text"] = str(game_score).zfill(7)
     if cpp.is_game_over():
@@ -108,7 +109,7 @@ def update():
       print("####"+str(cpp.remain_num()))
       if cpp.remain_num() <= 0:
         is_end = 1
-        thread3 = threading.Thread(target=endcard)
+        thread3 = threading.Thread(target=failed_result)
         thread3.start()
         sys.exit()
       for i in range(cpp.remain_num()):
@@ -117,9 +118,10 @@ def update():
         lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
       cpp.restart()
     elif cpp.is_game_cleared():
-      canvas.destroy()
-      print("OK")
-      endcard()
+      is_end = 1
+      thread3 = threading.Thread(target=cleared_result)
+      thread3.start()
+      sys.exit()
 
 def read_all_images():
   #coinはmain関数の中で画像を読み込む
@@ -190,9 +192,17 @@ def menu():
   menu.pack()
   root.mainloop()
 
+def count_up():
+  global game_time, lbl_time
+  game_time += 1
+  lbl_time["text"] = str(game_time).zfill(4)
+  if is_end == 0:
+    lbl_time.after(1000, count_up)
+
+
 #ウィンドウの作成
 def main():
-  global canvas, lbl_score, lbl_up, lbl_start, lbl_life, thread1
+  global canvas, lbl_score, lbl_time, lbl_start, lbl_life, thread1
   canvas = tk.Canvas(root, width=500, height=630, bg="black")
 
   cpp.reset()
@@ -205,8 +215,9 @@ def main():
   lbl_start.place(x=252, y=362, anchor=tk.CENTER)
   lbl_score = tk.Label(text="0000000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
   lbl_score.place(x=470, y=28, anchor=tk.NE)
-  lbl_up = tk.Label(text="00", font=("4x4極小かなフォント", 15), fg="white", bg="black")
-  lbl_up.place(x=70, y=28, anchor=tk.NW)
+  lbl_time = tk.Label(text="0000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  lbl_time.place(x=70, y=28, anchor=tk.NW)
+  #lbl_time.after(1000, count_up)
   photo_life = tk.PhotoImage(file="images/pacman/right0.png")
   
   lbl_life = []
@@ -260,7 +271,7 @@ def endgame(event):
   if key == "Return":
     sys.exit()
 
-def endcard():
+def failed_result():
   global lbl_msg1, lbl_msg2, thread1, thread2
   thread2.join()
   thread1.join()
@@ -304,6 +315,49 @@ def endcard():
   lbl_rank1.focus_set()
   result.pack()
   
+def cleared_result():
+  global lbl_msg1, lbl_msg2, thread1, thread2
+  thread2.join()
+  thread1.join()
+  
+  canvas.destroy()
+  with open("time.txt", "r") as f:
+    ranklist = f.readlines()
+  for i in range(len(ranklist)):
+    ranklist[i] = ranklist[i].replace("\n", "")
+  print(ranklist)
+  result = tk.Canvas(root, width=500, height=630, bg="black")
+  lbl_title = tk.Label(result, text="GAME CLEARED", font=("4x4極小かなフォント", 30), fg="white", bg="black")
+  lbl_title.place(x=250, y=80, anchor=tk.CENTER)
+  lbl_score = tk.Label(result, text="SCORE", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_score.place(x=100, y=160, anchor=tk.CENTER)
+  lbl_point = tk.Label(result, text="0000000", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_point.place(x=400, y=160, anchor=tk.CENTER)
+  lbl_time = tk.Label(result, text="TIME", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_time.place(x=100, y=240, anchor=tk.CENTER)
+  lbl_clock = tk.Label(result, text="00:00", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_clock.place(x=400, y=240, anchor=tk.CENTER)
+  lbl_ranking = tk.Label(result, text="TIME ATTACK RANKING", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_ranking.place(x=250, y=320, anchor=tk.CENTER)
+  lbl_place1 = tk.Label(result, text="1ST", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_place1.place(x=150, y=380, anchor=tk.CENTER)
+  lbl_rank1 = tk.Label(result, text=ranklist[0], font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_rank1.place(x=350, y=380, anchor=tk.CENTER)
+  lbl_place2 = tk.Label(result, text="2ND", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_place2.place(x=150, y=440, anchor=tk.CENTER)
+  lbl_rank2 = tk.Label(result, text=ranklist[1], font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_rank2.place(x=350, y=440, anchor=tk.CENTER)
+  lbl_place3 = tk.Label(result, text="3RD", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_place3.place(x=150, y=500, anchor=tk.CENTER)
+  lbl_rank3 = tk.Label(result, text=ranklist[2], font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_rank3.place(x=350, y=500, anchor=tk.CENTER)
+  lbl_msg1 = tk.Label(result, text="THX FOR PLAYING!!", font=("4x4極小かなフォント", 20), fg="white", bg="black")
+  lbl_msg1.place(x=250, y=580, anchor=tk.CENTER)
+  lbl_msg2 = tk.Label(result, text="PRESS ENTER TO GO TO MENU", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  lbl_msg1.after(3000, viewmsg)
+  lbl_rank1.bind('<Key>', endgame)
+  lbl_rank1.focus_set()
+  result.pack()
 
 if __name__ == "__main__":
   menu()
