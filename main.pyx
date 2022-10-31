@@ -8,6 +8,7 @@ cdef extern from "game.hpp":
 cdef extern from "game.hpp" namespace "Python":
   cdef int update_frame(double time, int r)
   cdef void start_game()
+  cdef void stop_game()
   cdef void restart_game()
   cdef void reset_game()
   cdef int get_field_value(int y, int x)
@@ -37,6 +38,9 @@ def update_pos(time: double, r: int):
 
 def start_move():
   start_game()
+
+def stop_move():
+  stop_game()
 
 def restart():
   restart_game()

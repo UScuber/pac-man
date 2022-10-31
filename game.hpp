@@ -505,6 +505,11 @@ struct Game {
     for(auto &enem : enemies) enem->start();
     started = true;
   }
+  void stop(){
+    started = false;
+    pacman.stop();
+    for(auto &enem : enemies) enem->stop();
+  }
   void restart(){
     printf("restart\n");
     this->~Game();
@@ -535,7 +540,7 @@ struct Game {
     printf("reset\n");
     srand((unsigned int)time(NULL));
     memcpy(field, first_field_board, sizeof(field));
-    remain_num = 2;
+    remain_num = 2-1;
     score = 0;
     dots_remain_num = dots_all_num;
   }
@@ -750,6 +755,9 @@ int update_frame(double time, int r){
 }
 void start_game(){
   game.start();
+}
+void stop_game(){
+  game.stop();
 }
 void restart_game(){
   game.restart();

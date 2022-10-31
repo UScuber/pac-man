@@ -1,5 +1,4 @@
 #GUI作成
-from distutils.archive_util import make_archive
 import tkinter as tk
 import threading
 import time
@@ -10,7 +9,7 @@ with contextlib.redirect_stdout(None):
 import gamelib as cpp
 from PIL import Image, ImageTk
 
-FRAME = 70 #処理の更新頻度[Hz]
+FRAME = 70+20 #処理の更新頻度[Hz]
 IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
 FLIP_FREQ = 10 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
@@ -28,6 +27,8 @@ ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
 FONT_NAME = "Arial"
+CANVAS_WIDTH = 500
+CANVAS_HEIGHT = 630
 msg_status = 0
 is_end = 0
 game_time = 0
@@ -39,6 +40,9 @@ def press_key(event):
   key_state = event.keysym
   if key_state == "Escape":
     print("pause")
+  if key_state == "q":
+    print("exit")
+    sys.exit()
   
   for i in range(len(KEY_NAME)):
     if key_state == KEY_NAME[i]:
@@ -68,13 +72,13 @@ def update_images():
         if x == pcx and y == pcy:
           #i,flipはどの数字でもよい
           if cpp.eat_num() == 0: print("eat_num_error")
-          canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
+          canvas.itemconfig(OBJECTS[i], image=images[SCORE][i][cpp.eat_num() - 1][flip])
       continue
     t = int(cpp.limit_time(i) * 4)
     if t <= 8 and not(t & 1): #flash
-      canvas.itemconfig(OBJECTS[i], image= images[FLASH][i][r][flip])
+      canvas.itemconfig(OBJECTS[i], image=images[FLASH][i][r][flip])
     else:
-      canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
+      canvas.itemconfig(OBJECTS[i], image=images[s][i][r][flip])
     canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
 
 #coinの消去
@@ -82,13 +86,21 @@ def delete_coin(t):
   if t != -1:
     canvas.delete("coin" + str(t))
 
+#canvasのdestroy
+def destroy_all():
+  global canvas, menu
+  if str(type(canvas)) == "<class 'tkinter.Canvas'>":
+    canvas.destroy()
+  if str(type(menu)) == "<class 'tkinter.Canvas'>":
+    menu.destroy()
+
 #盤面の更新
 def update():
-  global canvas, flip, is_end
+  global canvas, flip, is_end, game_score
   cnt = 0
   start = time.time()
   clock = pygame.time.Clock()
-  while (is_end == 0):
+  while is_end == 0:
     clock.tick(FRAME)
     res = cpp.update_pos(time.time() - start, last_pressed_key)
     delete_coin(res)
@@ -99,14 +111,15 @@ def update():
     game_score = cpp.get_score()
     
     update_images()
-      
+
     lbl_score["text"] = str(game_score).zfill(7)
     if cpp.is_game_over():
-      #time.sleep(1)
+      time.sleep(1)
       print("####"+str(cpp.remain_num()))
       if cpp.remain_num() <= 0:
         is_end = 1
-        thread3 = threading.Thread(target=failed_result)
+        thread3 = threading.Thread(target=display_result, args=(cpp.remain_num(),))
+        thread3.setDaemon(True)
         thread3.start()
         sys.exit()
       for i in range(cpp.remain_num()):
@@ -114,11 +127,15 @@ def update():
       for i in range(cpp.remain_num() - 1):
         lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
       cpp.restart()
+      cpp.start_move()
+      update_images() #初期状態を描画
+      cpp.stop_move()
     elif cpp.is_game_cleared():
+      time.sleep(1)
       is_end = 1
-      thread3 = threading.Thread(target=cleared_result)
+      thread3 = threading.Thread(target=display_result, args=(cpp.remain_num(),))
+      thread3.setDaemon(True)
       thread3.start()
-      sys.exit()
 
 def read_all_images():
   #coinはmain関数の中で画像を読み込む
@@ -127,22 +144,22 @@ def read_all_images():
       for k in range(2): #flip
         #normal
         img_name = "images/"+OBJECTS[i]+"/"+DIREC_NAME[j]+str(k) +".png"
-        images[NORMAL][i][j][k] = tk.PhotoImage(file= img_name)
+        images[NORMAL][i][j][k] = tk.PhotoImage(file=img_name)
         #eaten
         img_name = "images/eaten/"+DIREC_NAME[j]+".png"
-        images[EATEN][i][j][k] = tk.PhotoImage(file= img_name)
+        images[EATEN][i][j][k] = tk.PhotoImage(file=img_name)
         #frightened
         #とりあえず白く点滅するやつはなしにする
         img_name = "images/frightened/"+"0"+str(k)+".png"
-        images[FRIGHTENED][i][j][k] = tk.PhotoImage(file= img_name)
+        images[FRIGHTENED][i][j][k] = tk.PhotoImage(file=img_name)
         #score
         #食べられた時の表示する200,400,800,1600の画像
         img_name = "images/eaten/"+str(1<<(j+1))+"00.png"
-        images[SCORE][i][j][k] = tk.PhotoImage(file= img_name)
+        images[SCORE][i][j][k] = tk.PhotoImage(file=img_name)
         #flash
         #残り数秒になった時に白く点滅する画像
         img_name = "images/frightened/"+"1"+str(k)+".png"
-        images[FLASH][i][j][k] = tk.PhotoImage(file= img_name)
+        images[FLASH][i][j][k] = tk.PhotoImage(file=img_name)
 
 def draw_all_coins(coins):
   for i in range(cpp.h):
@@ -156,15 +173,15 @@ def draw_all_coins(coins):
       elif t == 8: #COIN
         file_name += "big.png"
       else: continue
-      coins.append(tk.PhotoImage(file= file_name))
+      coins.append(tk.PhotoImage(file=file_name))
       tag = "coin" + str(i*cpp.w + j)
-      canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image= coins[-1], tag= tag)
+      canvas.create_image((j+1)*SIZE + 7, (i+1)*SIZE +56, image=coins[-1], tag=tag)
 
 def startgame(event):
   global menu
   key_state = event.keysym
   if key_state == "Return":
-    menu.destroy()
+    destroy_all()
     main()
 
 def put_label(canvas, txt: str, font_size: int, x: int, y: int, anchor=tk.CENTER):
@@ -175,24 +192,54 @@ def put_label(canvas, txt: str, font_size: int, x: int, y: int, anchor=tk.CENTER
 def make_label(canvas, txt: str, font_size: int):
   return tk.Label(canvas, text=txt, font=(FONT_NAME, font_size), fg="white", bg="black")
 
+def make_canvas():
+  global root
+  return tk.Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="black")
 
 def create_menu():
   global root, menu
   root = tk.Tk()
   root.title("Pac-Man")
+  root.geometry("500x630")
   root.resizable(False, False)
-  menu = tk.Canvas(root, width=500, height=630, bg="black")
+  menu = make_canvas()
+  read_all_images() #始めに画像をすべて読み込んでおく
   pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
   put_label(menu, "PAC++ PERTHON", 30, x=250, y=80)
-  put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
+  #put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
+  put_label(menu, "PRESS ENTER", 20, x=250, y=525)
+  put_label(menu, "TO START THE GAME", 20, x=250, y=565)
+  lbl_pac = tk.Label(menu, text="", image=pic_pac)
+  lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
+  menu.bind('<KeyPress>', startgame)
+  menu.focus_set()
+  menu.place(x=0, y=0)
+  root.bind('<KeyPress>', press_key)
+  root.mainloop()
+
+def reset_values():
+  global msg_status, is_end, game_time, is_first
+  msg_status = 0
+  is_end = 0
+  game_time = 0
+  is_first = 1
+
+def set_menu():
+  global pic_pac
+  global root, menu
+  reset_values()
+  destroy_all()
+  menu = make_canvas()
+  pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
+  put_label(menu, "PAC++ PERTHON", 30, x=250, y=80)
+  #put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
   put_label(menu, "PRESS ENTER", 20, x=250, y=525)
   put_label(menu, "TO START THE GAME", 20, x=250, y=565)
   lbl_pac = tk.Label(menu, text="", image=pic_pac)
   lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
   menu.bind('<Key>', startgame)
   menu.focus_set()
-  menu.pack()
-  root.mainloop()
+  menu.place(x=0, y=0)
 
 def count_up():
   global game_time, lbl_time
@@ -204,15 +251,15 @@ def count_up():
 
 #ウィンドウの作成
 def main():
+  global board, coins, photo_life
   global canvas, lbl_score, lbl_time, lbl_start, lbl_life, thread1
-  canvas = tk.Canvas(root, width=500, height=630, bg="black")
+  canvas = make_canvas()
 
   cpp.reset()
 
   #boardに画像を取り込む
-  img_name = "images/stage.png"
-  board = tk.PhotoImage(file= img_name)
-  canvas.create_image(250, 318, image= board)
+  board = tk.PhotoImage(file="images/stage.png")
+  canvas.create_image(250, 318, image=board)
   lbl_start = put_label(canvas, "READY!", 15, x=252, y=362)
   lbl_score = put_label(canvas, "0000000", 15, x=470, y=28, anchor=tk.NE)
   lbl_time = put_label(canvas, "0000", 15, x=70, y=28, anchor=tk.NW)
@@ -228,9 +275,6 @@ def main():
   for i in range(cpp.remain_num()):
     lbl_life[i].place(x=10+35*i, y=630, anchor=tk.SW)
 
-
-  read_all_images()
-
   #coinを描画
   coins = [] #一時保存用
   draw_all_coins(coins)
@@ -239,19 +283,14 @@ def main():
   for i in [0,4,3,2,1]: #画像の奥行を設定
     x, y, r, s = cpp.get_xyrs(i)
     canvas.create_image(x / cpp.sizec * SIZE + 22, y / cpp.sizec * SIZE + 72,
-                        image= images[s][i][r][flip], tag= OBJECTS[i])
+                        image=images[s][i][r][flip], tag=OBJECTS[i])
 
-
-  root.bind("<KeyPress>", press_key)
-  canvas.pack()
-  
+  canvas.place(x=0, y=0)
 
   #updateを別のスレッドで動かす
-  thread1 = threading.Thread(target= update)
-  thread1.setDaemon(False)
+  thread1 = threading.Thread(target=update)
+  thread1.setDaemon(True)
   thread1.start()
-
-  root.mainloop()
 
 def viewmsg():
   global lbl_msg1, lbl_msg2, msg_status
@@ -266,28 +305,42 @@ def viewmsg():
   lbl_msg1.after(3000, viewmsg)
 
 def endgame(event):
+  global canvas
   key = event.keysym
   if key == "Return":
-    sys.exit()
+    destroy_all()
+    print("back to menu")
+    set_menu()
 
-def failed_result():
+def display_result(zanki: int):
   global lbl_msg1, lbl_msg2, thread1
   thread1.join()
   
-  canvas.destroy()
-  with open("time.txt", "r") as f:
+  destroy_all()
+  # read ranking
+  with open("score.txt", "r") as f:
     ranklist = f.readlines()
   for i in range(len(ranklist)):
-    ranklist[i] = ranklist[i].replace("\n", "")
+    ranklist[i] = int(ranklist[i].strip())
+  ranklist.append(game_score)
+  ranklist.sort()
+  ranklist.reverse()
   print(ranklist)
-  result = tk.Canvas(root, width=500, height=630, bg="black")
+  # add ranking
+  with open("score.txt", "a") as f:
+    print(game_score, file=f)
+  
+  result = make_canvas()
 
-  put_label(result, "GAMEOVER", 30, x=250, y=80)
+  if zanki == 0:
+    put_label(result, "GAMEOVER", 30, x=250, y=80)
+  else:
+    put_label(result, "GAME CLEARED!!", 30, x=250, y=80)
   put_label(result, "SCORE", 20, x=100, y=160)
-  put_label(result, "0000000", 20, x=400, y=160)
+  put_label(result, game_score, 20, x=400, y=160)
   put_label(result, "TIME", 20, x=100, y=240)
-  put_label(result, "00:00", 20, x=400, y=240)
-  put_label(result, "TIME ATTACK RANKING", 20, x=250, y=320)
+  put_label(result, game_time, 20, x=400, y=240)
+  put_label(result, "SCORE RANKING", 20, x=250, y=320)
   put_label(result, "1ST", 20, x=150, y=380)
   put_label(result, ranklist[0], 20, x=350, y=380)
   put_label(result, "2ND", 20, x=150, y=440)
@@ -298,39 +351,10 @@ def failed_result():
   lbl_msg1.after(3000, viewmsg)
   lbl_msg2 = make_label(result, "PRESS ENTER TO GO TO MENU", 15)
 
-  result.bind('<Key>', endgame)
+  result.bind('<KeyPress>', endgame)
   result.focus_set()
-  result.pack()
-  
-def cleared_result():
-  global lbl_msg1, lbl_msg2, thread1
-  thread1.join()
-  
-  canvas.destroy()
-  with open("time.txt", "r") as f:
-    ranklist = f.readlines()
-  for i in range(len(ranklist)):
-    ranklist[i] = ranklist[i].replace("\n", "")
-  print(ranklist)
-  result = tk.Canvas(root, width=500, height=630, bg="black")
-  put_label(result, "GAME CLEARED", 30, x=250, y=80)
-  put_label(result, "SCORE", 20, x=100, y=160)
-  put_label(result, "0000000", 20, x=400, y=160)
-  put_label(result, "TIME", 20, x=100, y=240)
-  put_label(result, "00:00", 20, x=400, y=240)
-  put_label(result, "TIME ATTACK RANKING", 20, x=250, y=320)
-  put_label(result, "1ST", 20, x=150, y=380)
-  put_label(result, ranklist[0], 20, x=350, y=380)
-  put_label(result, "2ND", 20, x=150, y=440)
-  put_label(result, ranklist[1], 20, x=350, y=440)
-  put_label(result, "3RD", 20, x=150, y=500)
-  put_label(result, ranklist[2], 20, x=350, y=500)
-  lbl_msg1 = put_label(result, "THX FOR PLAYING!!", 20, x=250, y=580)
-  lbl_msg2 = make_label(result, "PRESS ENTER TO GO TO MENU", 15)
-  lbl_msg1.after(3000, viewmsg)
-  result.bind('<Key>', endgame)
-  result.focus_set()
-  result.pack()
+  result.place(x=0, y=0)
+
 
 if __name__ == "__main__":
   create_menu()
