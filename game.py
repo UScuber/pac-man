@@ -1,4 +1,5 @@
 #GUI作成
+from distutils.archive_util import make_archive
 import tkinter as tk
 import threading
 import time
@@ -26,6 +27,7 @@ images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(
 ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
 KEY_NAME = ["Up", "Left", "Down", "Right"]
+FONT_NAME = "Arial"
 msg_status = 0
 is_end = 0
 game_time = 0
@@ -43,7 +45,7 @@ def press_key(event):
       if i & 1:
         cpp.start_move() #動作の開始
         
-        if is_first:
+        if is_first: #タイムのカウントを始める
           is_first = 0
           lbl_time.after(1000, count_up)
           lbl_start.destroy()
@@ -54,30 +56,26 @@ def press_key(event):
 #画像の位置や向きなどの更新
 def update_images():
   global canvas
-  clock = pygame.time.Clock()
-  while (is_end == 0):
-    clock.tick(FRAME)
-    for i in range(len(OBJECTS)):
-      x, y, r, s = cpp.get_xyrs(i)
-      if cpp.get_isstop(i):
-        if s == 1: #eaten スコアの表示
-          x = (x + cpp.sizec/2) // cpp.sizec
-          y = (y + cpp.sizec/2) // cpp.sizec
-          pcx, pcy = cpp.get_xyrs(0)[:2]
-          pcx = (pcx + cpp.sizec/2) // cpp.sizec
-          pcy = (pcy + cpp.sizec/2) // cpp.sizec
-          if x == pcx and y == pcy:
-            #i,flipはどの数字でもよい
-            if cpp.eat_num() == 0: print("eat_num_error")
-            canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
-        continue
-      t = int(cpp.limit_time(i) * 4)
-      if t <= 8 and not(t & 1): #flash
-        canvas.itemconfig(OBJECTS[i], image= images[FLASH][i][r][flip])
-      else:
-        canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
-      canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
-
+  for i in range(len(OBJECTS)):
+    x, y, r, s = cpp.get_xyrs(i)
+    if cpp.get_isstop(i):
+      if s == 1: #eaten スコアの表示
+        x = (x + cpp.sizec/2) // cpp.sizec
+        y = (y + cpp.sizec/2) // cpp.sizec
+        pcx, pcy = cpp.get_xyrs(0)[:2]
+        pcx = (pcx + cpp.sizec/2) // cpp.sizec
+        pcy = (pcy + cpp.sizec/2) // cpp.sizec
+        if x == pcx and y == pcy:
+          #i,flipはどの数字でもよい
+          if cpp.eat_num() == 0: print("eat_num_error")
+          canvas.itemconfig(OBJECTS[i], image= images[SCORE][i][cpp.eat_num() - 1][flip])
+      continue
+    t = int(cpp.limit_time(i) * 4)
+    if t <= 8 and not(t & 1): #flash
+      canvas.itemconfig(OBJECTS[i], image= images[FLASH][i][r][flip])
+    else:
+      canvas.itemconfig(OBJECTS[i], image= images[s][i][r][flip])
+    canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
 
 #coinの消去
 def delete_coin(t):
@@ -86,12 +84,9 @@ def delete_coin(t):
 
 #盤面の更新
 def update():
-  global canvas, flip, thread1, thread2, is_end
+  global canvas, flip, is_end
   cnt = 0
   start = time.time()
-  thread2 = threading.Thread(target= update_images)
-  thread2.setDaemon(True)
-  thread2.start()
   clock = pygame.time.Clock()
   while (is_end == 0):
     clock.tick(FRAME)
@@ -102,6 +97,8 @@ def update():
     sys.stdout.flush()
     cnt += 1
     game_score = cpp.get_score()
+    
+    update_images()
       
     lbl_score["text"] = str(game_score).zfill(7)
     if cpp.is_game_over():
@@ -170,25 +167,30 @@ def startgame(event):
     menu.destroy()
     main()
 
-def menu():
+def put_label(canvas, txt: str, font_size: int, x: int, y: int, anchor=tk.CENTER):
+  label = tk.Label(canvas, text=txt, font=(FONT_NAME, font_size), fg="white", bg="black")
+  label.place(x=x, y=y, anchor=anchor)
+  return label
+
+def make_label(canvas, txt: str, font_size: int):
+  return tk.Label(canvas, text=txt, font=(FONT_NAME, font_size), fg="white", bg="black")
+
+
+def create_menu():
   global root, menu
   root = tk.Tk()
   root.title("Pac-Man")
   root.resizable(False, False)
   menu = tk.Canvas(root, width=500, height=630, bg="black")
   pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
-  lbl_title = tk.Label(menu, text="PAC++ PERTHON", font=("4x4極小かなフォント", 30), fg="white", bg="black")
-  lbl_title.place(x=250, y=80, anchor=tk.CENTER)
-  lbl_manual = tk.Label(menu, text="これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", font=("Arial", 15), fg="white", bg="black")
-  lbl_manual.place(x=250, y=160, anchor=tk.CENTER)
-  lbl_start1 = tk.Label(menu, text="PRESS ENTER", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_start1.place(x=250, y=525, anchor=tk.CENTER)
-  lbl_start2 = tk.Label(menu, text="TO START THE GAME", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_start2.place(x=250, y=565, anchor=tk.CENTER)
+  put_label(menu, "PAC++ PERTHON", 30, x=250, y=80)
+  put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
+  put_label(menu, "PRESS ENTER", 20, x=250, y=525)
+  put_label(menu, "TO START THE GAME", 20, x=250, y=565)
   lbl_pac = tk.Label(menu, text="", image=pic_pac)
   lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
-  lbl_start1.bind('<Key>', startgame)
-  lbl_start1.focus_set()
+  menu.bind('<Key>', startgame)
+  menu.focus_set()
   menu.pack()
   root.mainloop()
 
@@ -211,12 +213,9 @@ def main():
   img_name = "images/stage.png"
   board = tk.PhotoImage(file= img_name)
   canvas.create_image(250, 318, image= board)
-  lbl_start = tk.Label(text="READY!", font=("4x4極小かなフォント", 15), fg="white", bg="black")
-  lbl_start.place(x=252, y=362, anchor=tk.CENTER)
-  lbl_score = tk.Label(text="0000000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
-  lbl_score.place(x=470, y=28, anchor=tk.NE)
-  lbl_time = tk.Label(text="0000", font=("4x4極小かなフォント", 15), fg="white", bg="black")
-  lbl_time.place(x=70, y=28, anchor=tk.NW)
+  lbl_start = put_label(canvas, "READY!", 15, x=252, y=362)
+  lbl_score = put_label(canvas, "0000000", 15, x=470, y=28, anchor=tk.NE)
+  lbl_time = put_label(canvas, "0000", 15, x=70, y=28, anchor=tk.NW)
   #lbl_time.after(1000, count_up)
   photo_life = tk.PhotoImage(file="images/pacman/right0.png")
   
@@ -272,8 +271,7 @@ def endgame(event):
     sys.exit()
 
 def failed_result():
-  global lbl_msg1, lbl_msg2, thread1, thread2
-  thread2.join()
+  global lbl_msg1, lbl_msg2, thread1
   thread1.join()
   
   canvas.destroy()
@@ -283,41 +281,29 @@ def failed_result():
     ranklist[i] = ranklist[i].replace("\n", "")
   print(ranklist)
   result = tk.Canvas(root, width=500, height=630, bg="black")
-  lbl_title = tk.Label(result, text="GAMEOVER", font=("4x4極小かなフォント", 30), fg="white", bg="black")
-  lbl_title.place(x=250, y=80, anchor=tk.CENTER)
-  lbl_score = tk.Label(result, text="SCORE", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_score.place(x=100, y=160, anchor=tk.CENTER)
-  lbl_point = tk.Label(result, text="0000000", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_point.place(x=400, y=160, anchor=tk.CENTER)
-  lbl_time = tk.Label(result, text="TIME", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_time.place(x=100, y=240, anchor=tk.CENTER)
-  lbl_clock = tk.Label(result, text="00:00", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_clock.place(x=400, y=240, anchor=tk.CENTER)
-  lbl_ranking = tk.Label(result, text="TIME ATTACK RANKING", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_ranking.place(x=250, y=320, anchor=tk.CENTER)
-  lbl_place1 = tk.Label(result, text="1ST", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place1.place(x=150, y=380, anchor=tk.CENTER)
-  lbl_rank1 = tk.Label(result, text=ranklist[0], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank1.place(x=350, y=380, anchor=tk.CENTER)
-  lbl_place2 = tk.Label(result, text="2ND", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place2.place(x=150, y=440, anchor=tk.CENTER)
-  lbl_rank2 = tk.Label(result, text=ranklist[1], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank2.place(x=350, y=440, anchor=tk.CENTER)
-  lbl_place3 = tk.Label(result, text="3RD", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place3.place(x=150, y=500, anchor=tk.CENTER)
-  lbl_rank3 = tk.Label(result, text=ranklist[2], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank3.place(x=350, y=500, anchor=tk.CENTER)
-  lbl_msg1 = tk.Label(result, text="THX FOR PLAYING!!", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_msg1.place(x=250, y=580, anchor=tk.CENTER)
-  lbl_msg2 = tk.Label(result, text="PRESS ENTER TO GO TO MENU", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+
+  put_label(result, "GAMEOVER", 30, x=250, y=80)
+  put_label(result, "SCORE", 20, x=100, y=160)
+  put_label(result, "0000000", 20, x=400, y=160)
+  put_label(result, "TIME", 20, x=100, y=240)
+  put_label(result, "00:00", 20, x=400, y=240)
+  put_label(result, "TIME ATTACK RANKING", 20, x=250, y=320)
+  put_label(result, "1ST", 20, x=150, y=380)
+  put_label(result, ranklist[0], 20, x=350, y=380)
+  put_label(result, "2ND", 20, x=150, y=440)
+  put_label(result, ranklist[1], 20, x=350, y=440)
+  put_label(result, "3RD", 20, x=150, y=500)
+  put_label(result, ranklist[2], 20, x=350, y=500)
+  lbl_msg1 = put_label(result, "THX FOR PLAYING!!", 20, x=250, y=580)
   lbl_msg1.after(3000, viewmsg)
-  lbl_rank1.bind('<Key>', endgame)
-  lbl_rank1.focus_set()
+  lbl_msg2 = make_label(result, "PRESS ENTER TO GO TO MENU", 15)
+
+  result.bind('<Key>', endgame)
+  result.focus_set()
   result.pack()
   
 def cleared_result():
-  global lbl_msg1, lbl_msg2, thread1, thread2
-  thread2.join()
+  global lbl_msg1, lbl_msg2, thread1
   thread1.join()
   
   canvas.destroy()
@@ -327,38 +313,25 @@ def cleared_result():
     ranklist[i] = ranklist[i].replace("\n", "")
   print(ranklist)
   result = tk.Canvas(root, width=500, height=630, bg="black")
-  lbl_title = tk.Label(result, text="GAME CLEARED", font=("4x4極小かなフォント", 30), fg="white", bg="black")
-  lbl_title.place(x=250, y=80, anchor=tk.CENTER)
-  lbl_score = tk.Label(result, text="SCORE", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_score.place(x=100, y=160, anchor=tk.CENTER)
-  lbl_point = tk.Label(result, text="0000000", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_point.place(x=400, y=160, anchor=tk.CENTER)
-  lbl_time = tk.Label(result, text="TIME", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_time.place(x=100, y=240, anchor=tk.CENTER)
-  lbl_clock = tk.Label(result, text="00:00", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_clock.place(x=400, y=240, anchor=tk.CENTER)
-  lbl_ranking = tk.Label(result, text="TIME ATTACK RANKING", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_ranking.place(x=250, y=320, anchor=tk.CENTER)
-  lbl_place1 = tk.Label(result, text="1ST", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place1.place(x=150, y=380, anchor=tk.CENTER)
-  lbl_rank1 = tk.Label(result, text=ranklist[0], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank1.place(x=350, y=380, anchor=tk.CENTER)
-  lbl_place2 = tk.Label(result, text="2ND", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place2.place(x=150, y=440, anchor=tk.CENTER)
-  lbl_rank2 = tk.Label(result, text=ranklist[1], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank2.place(x=350, y=440, anchor=tk.CENTER)
-  lbl_place3 = tk.Label(result, text="3RD", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_place3.place(x=150, y=500, anchor=tk.CENTER)
-  lbl_rank3 = tk.Label(result, text=ranklist[2], font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_rank3.place(x=350, y=500, anchor=tk.CENTER)
-  lbl_msg1 = tk.Label(result, text="THX FOR PLAYING!!", font=("4x4極小かなフォント", 20), fg="white", bg="black")
-  lbl_msg1.place(x=250, y=580, anchor=tk.CENTER)
-  lbl_msg2 = tk.Label(result, text="PRESS ENTER TO GO TO MENU", font=("4x4極小かなフォント", 15), fg="white", bg="black")
+  put_label(result, "GAME CLEARED", 30, x=250, y=80)
+  put_label(result, "SCORE", 20, x=100, y=160)
+  put_label(result, "0000000", 20, x=400, y=160)
+  put_label(result, "TIME", 20, x=100, y=240)
+  put_label(result, "00:00", 20, x=400, y=240)
+  put_label(result, "TIME ATTACK RANKING", 20, x=250, y=320)
+  put_label(result, "1ST", 20, x=150, y=380)
+  put_label(result, ranklist[0], 20, x=350, y=380)
+  put_label(result, "2ND", 20, x=150, y=440)
+  put_label(result, ranklist[1], 20, x=350, y=440)
+  put_label(result, "3RD", 20, x=150, y=500)
+  put_label(result, ranklist[2], 20, x=350, y=500)
+  lbl_msg1 = put_label(result, "THX FOR PLAYING!!", 20, x=250, y=580)
+  lbl_msg2 = make_label(result, "PRESS ENTER TO GO TO MENU", 15)
   lbl_msg1.after(3000, viewmsg)
-  lbl_rank1.bind('<Key>', endgame)
-  lbl_rank1.focus_set()
+  result.bind('<Key>', endgame)
+  result.focus_set()
   result.pack()
 
 if __name__ == "__main__":
-  menu()
+  create_menu()
   sys.exit()
