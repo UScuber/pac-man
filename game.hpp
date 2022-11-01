@@ -540,7 +540,7 @@ struct Game {
     printf("reset\n");
     srand((unsigned int)time(NULL));
     memcpy(field, first_field_board, sizeof(field));
-    remain_num = 2-1;
+    remain_num = 2;
     score = 0;
     dots_remain_num = dots_all_num;
   }

@@ -9,11 +9,11 @@ with contextlib.redirect_stdout(None):
 import gamelib as cpp
 from PIL import Image, ImageTk
 
-FRAME = 70+20 #処理の更新頻度[Hz]
+FRAME = 70 #処理の更新頻度[Hz]
 IMG_FRAME = 100 #画像の切り替えの頻度[Hz]
 FLIP_FREQ = 10 #何フレームごとに画像を切り替えるか
 flip = 0 #切り替わっているかどうか
-canvas = None #canvas
+canvas, menu = None, None #canvas
 SIZE = 17 #フィールド1blockの大きさ
 ADJ_X, ADJ_Y = 9, 59 #adjust_x,y
 OBJECTS = ["pacman", "red", "blue", "pink", "orange"]
@@ -29,6 +29,8 @@ KEY_NAME = ["Up", "Left", "Down", "Right"]
 FONT_NAME = "Arial"
 CANVAS_WIDTH = 500
 CANVAS_HEIGHT = 630
+DISPLAY_WIDTH = 1920 #windowの大きさに後で変更される
+DISPLAY_HEIGHT = 1080
 msg_status = 0
 is_end = 0
 game_time = 0
@@ -82,7 +84,7 @@ def update_images():
     canvas.moveto(OBJECTS[i], x / cpp.sizec * SIZE + ADJ_X, y / cpp.sizec * SIZE + ADJ_Y)
 
 #coinの消去
-def delete_coin(t):
+def delete_coin(t: int):
   if t != -1:
     canvas.delete("coin" + str(t))
 
@@ -161,7 +163,7 @@ def read_all_images():
         img_name = "images/frightened/"+"1"+str(k)+".png"
         images[FLASH][i][j][k] = tk.PhotoImage(file=img_name)
 
-def draw_all_coins(coins):
+def draw_all_coins(coins: list):
   for i in range(cpp.h):
     for j in range(cpp.w):
       t = cpp.get_field(i, j)
@@ -184,38 +186,17 @@ def startgame(event):
     destroy_all()
     main()
 
-def put_label(canvas, txt: str, font_size: int, x: int, y: int, anchor=tk.CENTER):
+def put_label(canvas, txt: str, font_size: int, x: int, y: int, anchor=tk.CENTER) -> tk.Label:
   label = tk.Label(canvas, text=txt, font=(FONT_NAME, font_size), fg="white", bg="black")
   label.place(x=x, y=y, anchor=anchor)
   return label
 
-def make_label(canvas, txt: str, font_size: int):
+def make_label(canvas, txt: str, font_size: int) -> tk.Label:
   return tk.Label(canvas, text=txt, font=(FONT_NAME, font_size), fg="white", bg="black")
 
-def make_canvas():
+def make_canvas() -> tk.Canvas:
   global root
   return tk.Canvas(root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT, bg="black")
-
-def create_menu():
-  global root, menu
-  root = tk.Tk()
-  root.title("Pac-Man")
-  root.geometry("500x630")
-  root.resizable(False, False)
-  menu = make_canvas()
-  read_all_images() #始めに画像をすべて読み込んでおく
-  pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
-  put_label(menu, "PAC++ PERTHON", 30, x=250, y=80)
-  #put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
-  put_label(menu, "PRESS ENTER", 20, x=250, y=525)
-  put_label(menu, "TO START THE GAME", 20, x=250, y=565)
-  lbl_pac = tk.Label(menu, text="", image=pic_pac)
-  lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
-  menu.bind('<KeyPress>', startgame)
-  menu.focus_set()
-  menu.place(x=0, y=0)
-  root.bind('<KeyPress>', press_key)
-  root.mainloop()
 
 def reset_values():
   global msg_status, is_end, game_time, is_first
@@ -231,7 +212,7 @@ def set_menu():
   destroy_all()
   menu = make_canvas()
   pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
-  put_label(menu, "PAC++ PERTHON", 30, x=250, y=80)
+  put_label(menu, "PAC++ MAN", 30, x=250, y=80)
   #put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
   put_label(menu, "PRESS ENTER", 20, x=250, y=525)
   put_label(menu, "TO START THE GAME", 20, x=250, y=565)
@@ -239,7 +220,7 @@ def set_menu():
   lbl_pac.place(x=250, y=315, anchor=tk.CENTER)
   menu.bind('<Key>', startgame)
   menu.focus_set()
-  menu.place(x=0, y=0)
+  menu.place(x=DISPLAY_WIDTH//2, y=DISPLAY_HEIGHT//2, anchor=tk.CENTER)
 
 def count_up():
   global game_time, lbl_time
@@ -249,7 +230,7 @@ def count_up():
     lbl_time.after(1000, count_up)
 
 
-#ウィンドウの作成
+#ゲームウィンドウの作成
 def main():
   global board, coins, photo_life
   global canvas, lbl_score, lbl_time, lbl_start, lbl_life, thread1
@@ -268,7 +249,7 @@ def main():
   
   lbl_life = []
   for i in range(5):
-    lbl_life.append(tk.Label(text="", bg="black", image=photo_life))
+    lbl_life.append(tk.Label(canvas, text="", bg="black", image=photo_life))
   for i in range(5):
     lbl_life[i].place_forget()
   
@@ -285,7 +266,7 @@ def main():
     canvas.create_image(x / cpp.sizec * SIZE + 22, y / cpp.sizec * SIZE + 72,
                         image=images[s][i][r][flip], tag=OBJECTS[i])
 
-  canvas.place(x=0, y=0)
+  canvas.place(x=DISPLAY_WIDTH//2, y=DISPLAY_HEIGHT//2, anchor=tk.CENTER)
 
   #updateを別のスレッドで動かす
   thread1 = threading.Thread(target=update)
@@ -353,9 +334,19 @@ def display_result(zanki: int):
 
   result.bind('<KeyPress>', endgame)
   result.focus_set()
-  result.place(x=0, y=0)
+  result.place(x=DISPLAY_WIDTH//2, y=DISPLAY_HEIGHT//2, anchor=tk.CENTER)
 
 
 if __name__ == "__main__":
-  create_menu()
-  sys.exit()
+  root = tk.Tk()
+  root.title("Pac-Man")
+  root.resizable(False, False)
+  root.config(bg="black")
+  root.attributes('-fullscreen', True)
+  root.update_idletasks()
+  DISPLAY_WIDTH = root.winfo_width()
+  DISPLAY_HEIGHT = root.winfo_height()
+  set_menu()
+  read_all_images() #始めに画像をすべて読み込んでおく
+  root.bind('<KeyPress>', press_key)
+  root.mainloop()
