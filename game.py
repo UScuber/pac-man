@@ -25,12 +25,11 @@ NORMAL, EATEN, FRIGHTENED, SCORE, FLASH = range(STATES_NUM)
 images = [[[[[None],[None]] for _ in range(len(DIREC_NAME))] for _ in range(len(OBJECTS))] for _ in range(STATES_NUM)]
 ispress_key = [False] * 4
 last_pressed_key = len(ispress_key)
+last_pac_posx, last_pac_posy = 81000, 138000
 KEY_NAME = ["Up", "Left", "Down", "Right"]
 FONT_NAME = "Arial"
-CANVAS_WIDTH = 500
-CANVAS_HEIGHT = 630
-DISPLAY_WIDTH = 1920 #windowの大きさに後で変更される
-DISPLAY_HEIGHT = 1080
+CANVAS_WIDTH, CANVAS_HEIGHT = 500, 630
+DISPLAY_WIDTH, DISPLAY_HEIGHT = 1920, 1080 #windowの大きさに後で変更される
 msg_status = 0
 is_end = 0
 game_time = 0
@@ -62,13 +61,19 @@ def press_key(event):
 #画像の位置や向きなどの更新
 def update_images():
   global canvas
+  global last_pac_posx, last_pac_posy
   for i in range(len(OBJECTS)):
     x, y, r, s = cpp.get_xyrs(i)
+    if i == 0:
+      if last_pac_posx == x and last_pac_posy == y:
+        canvas.itemconfig(OBJECTS[i], image=images[s][i][r][0])
+        continue
+      last_pac_posx, last_pac_posy = x, y
     if cpp.get_isstop(i):
       if s == 1: #eaten スコアの表示
         x = (x + cpp.sizec/2) // cpp.sizec
         y = (y + cpp.sizec/2) // cpp.sizec
-        pcx, pcy = cpp.get_xyrs(0)[:2]
+        pcx, pcy = last_pac_posx, last_pac_posy
         pcx = (pcx + cpp.sizec/2) // cpp.sizec
         pcy = (pcy + cpp.sizec/2) // cpp.sizec
         if x == pcx and y == pcy:
@@ -98,7 +103,7 @@ def destroy_all():
 
 #盤面の更新
 def update():
-  global canvas, flip, is_end, game_score
+  global canvas, flip, is_end, game_score, lbl_score, lbl_mode
   cnt = 0
   start = time.time()
   clock = pygame.time.Clock()
@@ -115,6 +120,7 @@ def update():
     update_images()
 
     lbl_score["text"] = str(game_score).zfill(7)
+    lbl_mode["text"] = "CHASE" if cpp.get_mode() else "SCATTER"
     if cpp.is_game_over():
       time.sleep(1)
       print("####"+str(cpp.remain_num()))
@@ -212,8 +218,9 @@ def set_menu():
   destroy_all()
   menu = make_canvas()
   pic_pac = ImageTk.PhotoImage(Image.open("images/pacman.png").resize((175, 181)))
-  put_label(menu, "PAC++ MAN", 30, x=250, y=80)
-  #put_label(menu, "これはポリ塩化アルミニウム(PAC)を\n食べる人を操るゲームです", 15, x=250, y=160)
+  put_label(menu, "PAC-MAN", 48, x=250, y=80)
+  put_label(menu, "矢印キーでパックマンを操作できます", 18, x=250, y=160)
+  put_label(menu, "C++とPythonを使ってなるべく再現してみました", 15, x=250, y=450)
   put_label(menu, "PRESS ENTER", 20, x=250, y=525)
   put_label(menu, "TO START THE GAME", 20, x=250, y=565)
   lbl_pac = tk.Label(menu, text="", image=pic_pac)
@@ -233,7 +240,7 @@ def count_up():
 #ゲームウィンドウの作成
 def main():
   global board, coins, photo_life
-  global canvas, lbl_score, lbl_time, lbl_start, lbl_life, thread1
+  global canvas, lbl_score, lbl_time, lbl_start, lbl_mode, lbl_life, thread1
   canvas = make_canvas()
 
   cpp.reset()
@@ -242,9 +249,9 @@ def main():
   board = tk.PhotoImage(file="images/stage.png")
   canvas.create_image(250, 318, image=board)
   lbl_start = put_label(canvas, "READY!", 15, x=252, y=362)
-  lbl_score = put_label(canvas, "0000000", 15, x=470, y=28, anchor=tk.NE)
-  lbl_time = put_label(canvas, "0000", 15, x=70, y=28, anchor=tk.NW)
-  #lbl_time.after(1000, count_up)
+  lbl_time = put_label(canvas, "0000", 15, x=40, y=28, anchor=tk.NW)
+  lbl_score = put_label(canvas, "0000000", 15, x=370, y=28, anchor=tk.NW)
+  lbl_mode = put_label(canvas, "SCATTER", 15, x=250, y=28, anchor=tk.N)
   photo_life = tk.PhotoImage(file="images/pacman/right0.png")
   
   lbl_life = []
@@ -286,9 +293,10 @@ def viewmsg():
   lbl_msg1.after(3000, viewmsg)
 
 def endgame(event):
-  global canvas
+  global canvas, lbl_msg1
   key = event.keysym
   if key == "Return":
+    lbl_msg1.destroy()
     destroy_all()
     print("back to menu")
     set_menu()
@@ -340,9 +348,8 @@ def display_result(zanki: int):
 if __name__ == "__main__":
   root = tk.Tk()
   root.title("Pac-Man")
-  root.resizable(False, False)
   root.config(bg="black")
-  root.attributes('-fullscreen', True)
+  root.attributes("-fullscreen", True)
   root.update_idletasks()
   DISPLAY_WIDTH = root.winfo_width()
   DISPLAY_HEIGHT = root.winfo_height()

@@ -426,7 +426,7 @@ struct PinkEnemy : Enemy {
 struct BlueEnemy : Enemy {
   static constexpr int blue_posy = 14, blue_posx = 12-1;
   static constexpr int innest_posy = 14, innest_posx = 12-1;
-  static constexpr double first_nest_wait_time = 5.0;
+  static constexpr double first_nest_wait_time = 2.0;
   const Enemy *red_enemy;
   BlueEnemy(const PacMan &pm, const Enemy *red) : Enemy(blue_posy*size, blue_posx*size, U, pm, innest_posy, innest_posx), red_enemy(red){
     cur_wait_time = first_nest_wait_time;
@@ -459,7 +459,7 @@ struct BlueEnemy : Enemy {
 struct OrangeEnemy : Enemy {
   static constexpr int oran_posy = 14, oran_posx = 15;
   static constexpr int innest_posy = 14, innest_posx = 15;
-  static constexpr double first_nest_wait_time = 9.0;
+  static constexpr double first_nest_wait_time = 4.0;
   OrangeEnemy(const PacMan &pm) : Enemy(oran_posy*size, oran_posx*size, U, pm, innest_posy, innest_posx){
     cur_wait_time = first_nest_wait_time;
     adj_posx = size / 2;
@@ -807,6 +807,9 @@ int get_eat_num(){
 }
 int get_remain_num(){
   return remain_num;
+}
+int get_current_mode(){
+  return chase_mode;
 }
 bool get_is_game_over(){
   return gameover;

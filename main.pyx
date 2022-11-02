@@ -23,6 +23,7 @@ cdef extern from "game.hpp" namespace "Python":
   cdef int get_is_game_over()
   cdef int get_is_game_cleared()
   cdef int get_current_score()
+  cdef int get_current_mode()
 
 #同じ名前だとコンパイルエラーが出るため
 
@@ -64,6 +65,9 @@ def remain_num():
 
 def limit_time(i: int):
   return get_limit_time(i)
+
+def get_mode():
+  return get_current_mode()
 
 def is_game_over():
   return get_is_game_over()
